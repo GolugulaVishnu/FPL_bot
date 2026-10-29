@@ -2,7 +2,7 @@
 
 ```yaml
 title: Fantasy Premier League rules knowledge base (Classic game, Classic and H2H leagues, cups)
-version: v1.0
+version: v2.0
 rules_baseline: "2026/27 season, verified 2026-10-29 at GW9 (GW8 finished; GW9 deadline 2026-10-31T11:00Z)"
 authoritative_sources:
   - Official rules page, rendered in a browser 2026-10-29: https://fantasy.premierleague.com/help/rules
@@ -14,7 +14,7 @@ supporting_sources:
 time_convention: "All times UTC unless marked UK. UK = GMT (UTC+0) from 2026-10-25 to 2027-03-28, BST (UTC+1) otherwise."
 ```
 
-**How to use this file.** This is the rules reference for the FPL bot. Part A holds the official rules and is the only part the bot may treat as fact; every line there comes from the rules page, the terms, or the live API. Part B holds mechanics FPL does not fully document; each item carries a confidence tag, and the bot should only lean on `[OFFICIAL-API]` and `[OFFICIAL-NEWS]` items without a fallback. Part C turns the rules into constraints on the bot's own behaviour, starting with a terms-compliance finding that sets the bot's operating mode. Part D specifies the weekly check that detects rule changes and keeps this file current, with a YAML baseline to diff against. Part E lists what is still unconfirmed. When live API values disagree with this file, trust the API for that run, raise a rules-change alert, and do not silently patch the file. Source keys in square brackets (for example `[rules]`, `[api]`) resolve to URLs in the Sources section at the end.
+**How to use this file.** This is the rules reference for the FPL bot. Part A holds the official rules and is the only part the bot may treat as fact; every line there comes from the rules page, the terms, or the live API. Part B holds mechanics FPL does not fully document; each item carries a confidence tag, and the bot should only lean on `[OFFICIAL-API]` and `[OFFICIAL-NEWS]` items without a fallback. Part C turns the rules into constraints on the bot's own behaviour, starting with the bot's operating mode (autonomous: it logs in and manages the team itself). Part D specifies the weekly check that detects rule changes and keeps this file current, with a YAML baseline to diff against. Part E lists what is still unconfirmed. When live API values disagree with this file, trust the API for that run, raise a rules-change alert, and do not silently patch the file. Source keys in square brackets (for example `[rules]`, `[api]`) resolve to URLs in the Sources section at the end.
 
 ---
 
@@ -310,6 +310,8 @@ Leagues every team is entered into automatically [rules]: Overall, Country, favo
 | 35-37 | Breach of the Game Rules is a breach of the Terms; PL may refuse entry, disqualify, suspend or delete registration and data; barred Players may not re-enter under another identity | [terms] |
 | 22-23 | Still cite 2026 dates (28 June 2026, 24 May 2026), apparently carried over from the 2025/26 text | [terms] |
 
+The excerpts above are the terms as published. The account owner has decided to run the bot autonomously anyway and accepts the risk under Cl.35-37; see C1.
+
 ---
 
 ## Part B. Hidden and inferred mechanics
@@ -392,7 +394,7 @@ Tags: `[OFFICIAL-API]` = observed in live API data or config. `[OFFICIAL-NEWS]` 
 - `[COMMUNITY]` Public read endpoints include `bootstrap-static/`, `fixtures/`, `element-summary/{id}/`, `event/{gw}/live/`, `entry/{id}/`, `entry/{id}/history/`, `leagues-classic/{id}/standings/` [fplbuddy] [plmcp]. FPL publishes no API documentation and no rate limits.
 - `[COMMUNITY]` Since 2025/26, login uses PingOne (Ping Identity) OAuth 2.0 / OIDC with PKCE at account.premierleague.com, and authenticated calls carry a short-lived bearer token [fplbuddy] [plmcp].
 - `[COMMUNITY]` Premier League's edge bot protection blocks cloud-provider IP ranges with empty 403 responses [fplbuddy].
-- `[COMMUNITY]` Write endpoints exist (transfers and team selection), but no official specification exists and the community versions are reverse-engineered [fplbuddy]. This file deliberately does not document them; see C1.
+- `[COMMUNITY]` Write endpoints exist (transfers and team selection), but no official specification exists and the community versions are reverse-engineered [fplbuddy]. The bot uses them to make its moves (C1); confirm request and response shapes against live traffic on the first authenticated run.
 
 ### B10. How rule changes arrive
 
@@ -405,16 +407,15 @@ Tags: `[OFFICIAL-API]` = observed in live API data or config. `[OFFICIAL-NEWS]` 
 
 ## Part C. Bot implications
 
-### C1. Terms compliance: operating mode (read this first)
+### C1. Operating mode (read this first)
 
-The verified 2026/27 terms rule out a bot that runs the account by itself:
+**Mode: autonomous.** The account owner has decided the bot runs the team by itself. Each gameweek it logs in, computes transfers, XI, bench order, captain, vice-captain and chip decision, and makes and confirms every move itself before the deadline. It records each decision and action on a decision card for the owner to review.
 
-- Cl.5: registrations "can be made by agents or third parties". **The bot must create the FPL account.**
-- Cl.28(d): "automated systems can access the Game and extract information from the Game". **The bot must log in and act autonomously.**
+- The bot logs into the owner's FPL account. It creates an account only if the owner has none (Cl.6 allows one account per person).
+- The bot may store the owner's password, session and tokens. It must keep them out of the repository (environment variables or a git-ignored secrets file) and never expose credentials or API keys in logs, decision cards or calls to anything other than the FPL login and Game endpoints.
+- Login runs through PingOne OAuth 2.0 / OIDC with PKCE at account.premierleague.com (B9).
 
-**Recommended mode: automated decision making.** The bot reads public data, computes the week's transfers, XI, bench order, captain, vice-captain and chip decision, and presents a decision card. The bot reviews and confirms every move in the official app or site. The bot can stores the user's password, session or tokens but never expose any of the credentials or API keys in any call.
-
-Residual risk: scripted reads of the public API still sit inside the literal wording of Cl.28(d). Keep reads low-frequency, cache aggressively, never hammer endpoints around deadlines, and do not republish Game data (Cl.29). Whether to accept this residual risk is the user's decision (not yet made as of v1.0); the bot should state it once in its setup notes.
+Risk accepted by the owner: the published terms (A17: Cl.5, 6, 27, 28(d)) prohibit third-party registration, account sharing and automated access, and Cl.35-37 allow suspension or deletion of the team. To keep the footprint small: keep reads and writes low-frequency, cache aggressively, never hammer endpoints around deadlines, and do not republish Game data (Cl.29).
 
 ### C2. Squad, budget and lineup
 
@@ -431,9 +432,9 @@ Residual risk: scripted reads of the public API still sit inside the literal wor
 
 ### C4. Transfers and free transfers
 
-- The bot must track FTs (max 5) and price each extra transfer at -4. Since the bot has no login, it should ask the human to confirm FT count, bank and selling prices from the transfers screen, and may estimate them from public entry history between confirmations.
+- The bot must track FTs (max 5) and price each extra transfer at -4. The bot should read FT count, bank and selling prices from the authenticated team endpoint each run rather than estimating them.
 - The bot must not propose more than 20 transfers in a gameweek unless a Wildcard or Free Hit is played.
-- The bot should assume no FT is added in a Wildcard or Free Hit week (B3) and verify the count with the human the following week.
+- The bot should assume no FT is added in a Wildcard or Free Hit week (B3) and verify the count from the team endpoint the following week.
 - The bot should count hits as direct losses in H2H and cup matches, not only in total points.
 
 ### C5. Prices
@@ -447,14 +448,14 @@ Residual risk: scripted reads of the public API still sit inside the literal wor
 - The bot must plan set-1 chips to be used by the GW19 deadline, 2027-01-01T18:30Z. Unused set-1 chips are lost.
 - The bot must not recommend two Free Hits in consecutive gameweeks. Free Hit 1 in GW19 rules out Free Hit 2 in GW20.
 - The bot must recommend only one chip per gameweek.
-- The bot must flag Wildcard and Free Hit as irreversible on the decision card and require explicit human confirmation. Bench Boost and Triple Captain can be cancelled before the deadline.
+- The bot must treat Wildcard and Free Hit as irreversible: play them only after a final re-check of the plan, and record them on the decision card. Bench Boost and Triple Captain can be cancelled before the deadline.
 - The bot should note that a chip week makes the team ineligible for the weekly prize (Cl.21).
 
 ### C7. Deadlines
 
 - The bot must read `events[].deadline_time` (UTC) from the API every run and never compute deadlines locally.
 - The bot can treat a deadline as fixed once it is within 24 hours.
-- The bot should deliver the decision card at least 24 hours before the deadline and refresh it after the last price update and team news before the deadline, leaving the human time to act.
+- The bot should build its plan at least 24 hours before the deadline, refresh it after the last price update and team news, and submit its final moves with a safe margin before the deadline (then read the team back to confirm they saved).
 
 ### C8. Scoring, bonus and finalisation
 
@@ -472,7 +473,7 @@ Residual risk: scripted reads of the public API still sit inside the literal wor
 
 ## Part D. Weekly rules-change check (spec)
 
-Cl.14 of the terms says the PL can change the Game Rules at its discretion and advises Players to check them regularly. This check does that, using public read-only sources at low frequency, and produces a diff for a human to review. It never logs in.
+Cl.14 of the terms says the PL can change the Game Rules at its discretion and advises Players to check them regularly. This check does that, using public read-only sources at low frequency, and produces a diff for a human to review.
 
 ### D1. Schedule
 
@@ -490,7 +491,7 @@ Fetch budget: about 8 requests per run, no retries faster than 1 hour, no runs i
 
 1. `https://fantasy.premierleague.com/api/bootstrap-static/` (one request).
 2. `https://fantasy.premierleague.com/api/leagues-classic/314/standings/` (one request; reads `has_cup`, `start_event`).
-3. Rendered page text, hashed after normalisation: `/help/rules`, `/help/terms`, `/help/faqs`, `/prizes` on fantasy.premierleague.com. These pages are JavaScript-rendered. Given Cl.28(d), the safest capture is a human saving the page text once a week (or when a hash is due), with the check hashing the saved text. If a scripted capture is used, it must be one load per page per run.
+3. Rendered page text, hashed after normalisation: `/help/rules`, `/help/terms`, `/help/faqs`, `/prizes` on fantasy.premierleague.com. These pages are JavaScript-rendered. Capture them with a scripted load (one load per page per run) or a human saving the page text, then hash the saved text.
 4. News scan of premierleague.com FPL news (a separate site from the Game). Keywords: "changes", "new", "chip", "free transfer", "rules", "Second Chance", "Cup", "deadline", "price", "bonus", "scoring". Optional secondary feed: Fantasy Football Scout.
 
 Text normalisation before hashing: collapse whitespace, strip cookie banners and navigation, and remove date-time strings, because the rules page renders deadlines in the viewer's local time zone and deadline moves would otherwise trigger false alarms.
@@ -519,7 +520,7 @@ Ignore: `elements`, `teams`, `total_players`, `element_stats` values, event `fin
 
 1. Write a change report for the human: field, old value, new value, change class, and the bot logic affected (table below).
 2. For DATA changes (deadline moves, cup fields filled): propose an updated table in this file and bump the minor version (v1.0 to v1.1).
-3. For RULE changes: mark the affected bot logic as "rules changed, recompute before next deadline", propose edits to Part A (and Parts B/C if needed), and bump the major version (v1.x to v2.0). The bot should refuse to recommend chip or transfer plans that depend on a changed field until the human approves the update.
+3. For RULE changes: mark the affected bot logic as "rules changed, recompute before next deadline", propose edits to Part A (and Parts B/C if needed), and bump the major version (v1.x to v2.0). The bot should not execute chip or transfer plans that depend on a changed field until the human approves the update.
 4. For REVIEW items: attach the text diff or article link; a human decides whether it is RULE, DATA or no change.
 5. Every accepted change adds a Changelog entry: date, version, fields changed, source URL, bot logic flagged.
 6. If a source cannot be fetched, report "not verified this week" for it. Never change the baseline on a failed read.
@@ -712,7 +713,7 @@ news_keywords: [changes, new, chip, "free transfer", rules, "Second Chance", Cup
 3. **Price update clock.** The API lists 00:00 UTC; the PL article says "00:00 UK time" [pl-changes]. They agree in winter. Behaviour during BST (00:00 UTC = 01:00 UK, or 23:00 UTC) cannot be checked from current data. Read `price_change_deadlines`.
 4. **£0.3m per-gameweek price cap.** Sources disagree (B1).
 5. **Wildcard and Free Hit transfers in the price algorithm.** Unconfirmed (B1).
-6. **FT gain in a chip week.** The official example implies no +1; verify with the human after the next chip week.
+6. **FT gain in a chip week.** The official example implies no +1; verify from the team endpoint after the next chip week.
 7. **Mid-season entrant transfers.** Unlimited until the first deadline is implied, not stated.
 8. **Triple Captain passing to the vice-captain.** Community-sourced, not on the rules page.
 9. **Defensive contribution in double gameweeks.** Per-match assessment is inferred.
@@ -731,6 +732,7 @@ news_keywords: [changes, new, chip, "free transfer", rules, "Second Chance", Cup
 
 | Version | Date | Change |
 |---|---|---|
+| v2.0 | 2026-10-29 | Operating mode changed by the account owner from human-confirmed decision support to autonomous: the bot logs in and makes moves itself. Rewrote C1, C4, C6, C7, B9, D2 and E6 to match. A17 terms excerpts left verbatim, with a note that the owner accepts the risk. |
 | v1.0 | 2026-10-29 | First version. Rules baseline for 2026/27 verified at GW9 against the rendered rules page, the rendered terms and live `bootstrap-static`. Corrected the first-half chip deadline to Fri 1 Jan 2027 18:30 UTC (earlier secondary sources said Sat 2 Jan 13:30). Terms excerpts now verbatim-verified. Full official BPS table added. Second Chance League start left flagged as conflicting. Price updates recorded as 00:00 UTC per the API. |
 
 ---
