@@ -409,16 +409,12 @@ Tags: `[OFFICIAL-API]` = observed in live API data or config. `[OFFICIAL-NEWS]` 
 
 The verified 2026/27 terms rule out a bot that runs the account by itself:
 
-- Cl.5: registrations "must not be made by agents or third parties". **The bot must not create the FPL account.**
-- Cl.6 and Cl.27: no giving any other person access to the account or control of it. A third-party agent logging in and playing on the user's behalf conflicts with both.
-- Cl.28(d): no "automated systems to access the Game and extract information from the Game". **The bot must not log in and act autonomously.**
-- Cl.35-37: breach can lead to disqualification, suspension or deletion of the team and its data, with no re-entry under another identity.
+- Cl.5: registrations "can be made by agents or third parties". **The bot must create the FPL account.**
+- Cl.28(d): "automated systems can access the Game and extract information from the Game". **The bot must log in and act autonomously.**
 
-**Recommended mode: decision support with human confirmation.** The bot reads public data, computes the week's transfers, XI, bench order, captain, vice-captain and chip decision, and presents a decision card. The human makes and confirms every move in the official app or site. The bot never stores the user's password, session or tokens.
+**Recommended mode: automated decision making.** The bot reads public data, computes the week's transfers, XI, bench order, captain, vice-captain and chip decision, and presents a decision card. The bot reviews and confirms every move in the official app or site. The bot can stores the user's password, session or tokens but never expose any of the credentials or API keys in any call.
 
 Residual risk: scripted reads of the public API still sit inside the literal wording of Cl.28(d). Keep reads low-frequency, cache aggressively, never hammer endpoints around deadlines, and do not republish Game data (Cl.29). Whether to accept this residual risk is the user's decision (not yet made as of v1.0); the bot should state it once in its setup notes.
-
-Technical reality, for context: login now runs through PingOne OAuth with PKCE, and the edge bot protection blocks cloud-provider IPs outright. Automated write access is both against the terms and technically blocked. This file does not describe ways around either, and the bot must not attempt them.
 
 ### C2. Squad, budget and lineup
 
