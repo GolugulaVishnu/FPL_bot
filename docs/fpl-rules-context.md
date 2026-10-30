@@ -2,7 +2,7 @@
 
 ```yaml
 title: Fantasy Premier League rules knowledge base (Classic game, Classic and H2H leagues, cups)
-version: v2.3
+version: v2.4
 rules_baseline: "2026/27 season, verified 2026-10-29 at GW9 (GW8 finished; GW9 deadline 2026-10-31T11:00Z)"
 authoritative_sources:
   - Official rules page, rendered in a browser 2026-10-29: https://fantasy.premierleague.com/help/rules
@@ -585,7 +585,7 @@ game_settings:            # game_config.rules expected to mirror these
   underdog_differential: 5
   timezone: "UTC"         # game_config.settings.timezone
 
-scoring:                  # game_config.scoring, as {GKP, DEF, MID, FWD}; confirm key spellings on first run
+scoring:                  # game_config.scoring, normalised to {GKP, DEF, MID, FWD}. Confirmed 2026-10-30: the API gives a plain number when all positions score the same, and a {DEF, FWD, GKP, MID} map otherwise
   short_play:             {GKP: 1,  DEF: 1,  MID: 1,  FWD: 1}
   long_play:              {GKP: 2,  DEF: 2,  MID: 2,  FWD: 2}
   goals_scored:           {GKP: 10, DEF: 6,  MID: 5,  FWD: 4}
@@ -685,7 +685,7 @@ phases_monthly:           # from /help/rules
   March: [28, 30]
   April: [31, 33]
   May: [34, 38]
-phases_count: null        # record on first run (API may include an "Overall" phase)
+phases_count: 11          # confirmed 2026-10-30: "Overall" (1-38) plus the 10 monthly phases
 
 price_changes:
   time_of_day_utc: "00:00:00"
@@ -734,6 +734,7 @@ news_keywords: [changes, new, chip, "free transfer", rules, "Second Chance", Cup
 
 | Version | Date | Change |
 |---|---|---|
+| v2.4 | 2026-10-30 | DATA (D5 first-run check) against the live snapshot in `samples/2026-10-30/`: every `game_settings` value, chip window, position limit, deadline and scoring value matches the baseline; all must-be-zero scoring keys are 0. Recorded `phases_count: 11` (includes Overall) and the scoring value shapes. `game_config.rules` mirrors `game_settings` except `timezone`. Page hashes still unset. |
 | v2.3 | 2026-10-30 | Repo made private; C1 note updated. |
 | v2.2 | 2026-10-30 | Owner created the FPL account; the bot logs in only and never signs up. Password entry via the setup command into the OS keychain. |
 | v2.1 | 2026-10-30 | C1 updated with the owner's setup decisions: account created by the bot at go-live for soohzabimaru864@gmail.com, runs on the owner's Windows machine with macOS backup, password in the OS keychain, no human veto, decision cards as .txt files in the repo, ntfy alerts. Points to `docs/system-flow.md`. |
