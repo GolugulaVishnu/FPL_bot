@@ -1,0 +1,71 @@
+FPL BOT DECISION CARD | 2026-27 GW9 | FINAL
+==============================================================================
+Generated:  2026-10-30 19:54 UTC  (model 7f03e6f)
+Deadline:   Sat 31 Oct 2026 11:00 UTC  (from the FPL API)
+Mode:       Initial squad: the team has no players yet, so all 15 are picked freely (unlimited transfers before the team's first deadline).
+Data:       FPL API, read 2026-10-30 19:54 UTC; 8 finished gameweeks loaded
+Team name:  xP Machine
+
+SUMMARY
+  Squad cost 98.9m of 100.0m, bank 1.1m
+  Captain Haaland (MCI), vice Gabriel (ARS)
+  Chip: Bench Boost
+  Projected points GW9: 71.5 (incl. captain and bench)
+  Planning horizon GW9-14, later weeks weighted less (x0.85 per week)
+
+STARTING XI
+  Pos Player               Team    £m  GW9 opp         xP   xP6w  mins  breakdown
+  GKP Raya                 ARS    6.2  LIV (A)       3.74   23.5    90  app +2.00 cs +1.40 gc -0.31 sav +0.19 bon +0.47
+  DEF Gabriel (V)          ARS    7.9  LIV (A)       5.07   32.4    90  app +2.00 gls +0.58 ast +0.11 cs +1.40 gc -0.31 dc +0.81 bon +0.65 crd -0.17
+  DEF Silva                BOU    5.0  LEE (H)       4.71   27.4    90  app +2.00 gls +0.71 ast +0.14 cs +1.20 gc -0.37 dc +1.15 bon +0.16 crd -0.27
+  DEF Hill                 BOU    5.5  LEE (H)       4.50   26.1    90  app +2.00 gls +0.18 ast +0.22 cs +1.20 gc -0.37 dc +1.10 bon +0.34 crd -0.17
+  DEF Van Hecke            TOT    4.9  CRY (H)       4.42   25.3    90  app +2.00 gls +0.59 ast +0.19 cs +1.25 gc -0.36 dc +0.71 bon +0.26 crd -0.22
+  MID Mbeumo               MUN    7.9  CHE (A)       4.71   30.0    90  app +2.00 gls +1.76 ast +0.33 cs +0.20 dc +0.08 bon +0.47 crd -0.12
+  MID Tavernier            BOU    6.4  LEE (H)       4.96   29.6    81  app +2.00 gls +1.55 ast +0.44 cs +0.34 dc +0.13 bon +0.74 crd -0.24
+  MID E.Le Fée             SUN    5.7  COV (A)       4.22   25.4    85  app +2.00 gls +0.79 ast +0.50 cs +0.29 dc +0.39 bon +0.33 crd -0.08
+  MID Rudoni               COV    4.9  SUN (H)       4.08   23.5    78  app +1.94 gls +1.08 ast +0.46 cs +0.33 dc +0.29 bon +0.12 crd -0.14
+  FWD Haaland (C)          MCI   15.8  BHA (H)       5.84   33.6    88  app +2.00 gls +2.47 ast +0.25 bon +1.18 crd -0.06
+  FWD Barry                EVE    5.6  NEW (A)       4.30   25.7    87  app +2.00 gls +1.90 ast +0.09 bon +0.38 crd -0.06
+
+BENCH (substitution order; slot 12 is always the reserve goalkeeper)
+  Pos Player               Team    £m  GW9 opp         xP   xP6w  mins  breakdown
+  GKP Trafford [12]        LEE    5.0  BOU (A)       3.56   22.9    90  app +2.00 cs +0.65 gc -0.66 sav +0.99 bon +0.59
+  FWD Calvert-Lewin [13]   LEE    6.1  BOU (A)       3.98   25.4    86  app +2.00 gls +1.45 ast +0.07 bon +0.65 crd -0.20
+  MID Ødegaard [14]        ARS    6.7  LIV (A)       3.98   25.4    83  app +2.00 gls +0.68 ast +0.46 cs +0.38 dc +0.12 bon +0.44 crd -0.10
+  DEF De Cuyper [15]       BHA    5.3  MCI (A)       3.59   25.8    84  app +2.00 gls +0.61 ast +0.36 cs +0.66 gc -0.65 dc +0.16 bon +0.62 crd -0.17
+  Order rule: likeliest to play first, then expected points (rules file C2).
+
+CAPTAINCY
+  Haaland               5.84 xP, 88 expected mins  -> captain
+  Gabriel               5.07 xP, 90 expected mins  -> vice
+  Tavernier             4.96 xP, 81 expected mins  -> alternative
+  Mbeumo                4.71 xP, 90 expected mins  -> alternative
+  Rule: captain = highest xP in the XI; vice = next highest starter expected to play 60+ minutes.
+
+CHIPS
+  Bench Boost: bench projects 15.1 pts against the 14.5 threshold -> PLAY.
+  Triple Captain: Haaland projects 5.84 this week; best captain score in the rest of the 6-week horizon is 6.14 -> hold.
+  Wildcard: not needed (transfers are already unlimited before the team's first deadline).
+  Free Hit: not allowed in a team's first gameweek.
+
+BEST PLAYERS LEFT OUT (by weighted xP over GW9-14)
+  GKP: Tzolakis HUL 4.7m 20.7; Suzuki AVL 5.0m 20.5; A.Becker LIV 5.5m 20.0
+  DEF: Tarkowski EVE 6.2m 25.4; Vuskovic BHA 5.2m 25.2; Virgil LIV 6.4m 25.0
+  MID: Palmer CHE 9.8m 25.0; Groß BHA 6.2m 24.8; Rayan BOU 6.3m 24.7
+  FWD: Evanilson BOU 6.3m 24.2; Isak LIV 9.1m 23.9; Thiago BRE 7.8m 23.9
+  These lost on price per point, the 3-per-club limit, or fit with the rest of the squad.
+
+ASSUMPTIONS AND CONFIDENCE
+  No squad player carries an injury, suspension or doubt flag.
+  Model: xG-based team strength, recent minutes, per-90 rates shrunk toward position averages.
+  Backtest 2025-26: beats recent form (captain 6.2 vs 4.1 pts/GW); FPL's own projection was
+  better on the 10 gameweeks where it could be compared (reports/backtest-2025-26.txt).
+  
+  HOW THIS GAMEWEEK GETS ENTERED
+    The bot cannot log in and submit yet, so enter this team on the FPL site by hand:
+    1. Pick Team: add the 15 players above (budget 100.0m).
+    2. Team name: xP Machine. Favourite club: none.
+    3. Starting XI and bench order exactly as above; set captain (C) and vice (V).
+    4. Chip: Bench Boost (activate it on the Pick Team page before saving).
+    5. Save before Sat 31 Oct 11:00 UTC.
+
