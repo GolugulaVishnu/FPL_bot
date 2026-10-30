@@ -1,0 +1,1433 @@
+{
+ "recorded_at": "2026-10-30T21:17:50+00:00",
+ "note": "Cleaned recording of the FPL website's own requests. No passwords, cookies or tokens.",
+ "requests": [
+  {
+   "method": "GET",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/me/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "cookie": "names: OptanonConsent, optimizelyEndUserId, req_language",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-language": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "response": {
+    "json_shape": {
+     "player": "<NoneType>",
+     "watched": []
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/as/.well-known/openid-configuration",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "application/jwk-set+json, application/json",
+    "origin": "https://fantasy.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "__cf_bm"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/as/authorize",
+    "query": {
+     "client_id": "[REDACTED]",
+     "redirect_uri": "[REDACTED]",
+     "response_type": "[REDACTED]",
+     "scope": "[REDACTED]",
+     "state": "[REDACTED]",
+     "code_challenge": "[REDACTED]",
+     "code_challenge_method": "[REDACTED]",
+     "language": "[REDACTED]"
+    }
+   },
+   "request_headers": {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sec-fetch-user": "[REDACTED]",
+    "upgrade-insecure-requests": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "__cf_bm"
+   ],
+   "response": {
+    "content_type": "text/html"
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/.well-known/ping-endpoints.json",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __cf_bm, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/davinci/policy/[REDACTED]/start",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "authorization": "Bearer [REDACTED]",
+    "content-length": "[REDACTED]",
+    "content-type": "application/json",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __cf_bm, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "origin": "https://account.premierleague.com",
+    "origin-cookies": "[REDACTED]",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "interactionId"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/cdn-cgi/challenge-platform/h/g/jsd/oneshot/c787ce48cf6b/0.3936077355704052:1793391257:Kygwlstsiy9zl30eJDtreqNDNjQcRHA57zfBBQn06Ws/a52d705bac6e43f7",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "content-length": "[REDACTED]",
+    "content-type": "text/plain;charset=UTF-8",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __cf_bm, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "origin": "https://account.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": {
+    "text": "<16891 characters, not recorded>"
+   },
+   "status": 200,
+   "sets_cookies": [
+    "__cf_bm",
+    "cf_clearance"
+   ],
+   "response": {
+    "content_type": "text/plain"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/davinci/connections/[REDACTED]/capabilities/customHTMLTemplate",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "content-length": "[REDACTED]",
+    "content-type": "application/json",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __cf_bm, cf_clearance, interactionId, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "interactionid": "[REDACTED]",
+    "interactiontoken": "[REDACTED]",
+    "origin": "https://account.premierleague.com",
+    "origin-cookies": "[REDACTED]",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": {
+    "json": {
+     "id": "<str>",
+     "eventName": "<str>",
+     "parameters": {
+      "eventType": "<str>",
+      "data": {}
+     },
+     "pollProps": {
+      "status": "<str>",
+      "delayInMs": "<int>",
+      "retriesAllowed": "<int>",
+      "pollChallengeStatus": "[REDACTED]"
+     }
+    }
+   },
+   "status": 200,
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/davinci/connections/[REDACTED]/capabilities/customHTMLTemplate",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "content-length": "[REDACTED]",
+    "content-type": "application/json",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __cf_bm, cf_clearance, datadome, interactionId, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "interactionid": "[REDACTED]",
+    "interactiontoken": "[REDACTED]",
+    "origin": "https://account.premierleague.com",
+    "origin-cookies": "[REDACTED]",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": {
+    "json": {
+     "id": "<str>",
+     "nextEvent": {
+      "constructType": "<str>",
+      "eventName": "<str>",
+      "params": [],
+      "eventType": "<str>",
+      "postProcess": {}
+     },
+     "parameters": {
+      "buttonType": "<str>",
+      "buttonValue": "<str>",
+      "username": "[REDACTED]",
+      "password": "[REDACTED]"
+     },
+     "eventName": "<str>",
+     "interactionId": "<str>"
+    }
+   },
+   "status": 200,
+   "sets_cookies": [
+    "interactionId"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/davinci/connections/[REDACTED]/capabilities/customHTMLTemplate",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "content-length": "[REDACTED]",
+    "content-type": "application/json",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __cf_bm, cf_clearance, datadome, global_sso_id, interactionId, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "interactionid": "[REDACTED]",
+    "interactiontoken": "[REDACTED]",
+    "origin": "https://account.premierleague.com",
+    "origin-cookies": "[REDACTED]",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": {
+    "json": {
+     "id": "<str>",
+     "nextEvent": {
+      "constructType": "<str>",
+      "eventName": "<str>",
+      "params": [],
+      "eventType": "<str>",
+      "postProcess": {}
+     },
+     "parameters": {
+      "buttonType": "<str>",
+      "buttonValue": "<str>"
+     },
+     "eventName": "<str>",
+     "interactionId": "<str>"
+    }
+   },
+   "status": 200,
+   "sets_cookies": [
+    "ST",
+    "ST-NO-SS"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/as/resume",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "cache-control": "[REDACTED]",
+    "content-length": "[REDACTED]",
+    "content-type": "application/x-www-form-urlencoded",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, ST, ST-NO-SS, __cf_bm, cf_clearance, datadome, global_sso_id, interactionId, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "origin": "https://account.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sec-fetch-user": "[REDACTED]",
+    "upgrade-insecure-requests": "[REDACTED]"
+   },
+   "request_body": {
+    "form": {
+     "dvResponse": "[REDACTED]",
+     "state": "[REDACTED]"
+    }
+   },
+   "status": 302,
+   "redirect_to": {
+    "host": "fantasy.premierleague.com",
+    "path": "/",
+    "query": {
+     "code": "[REDACTED]",
+     "state": "[REDACTED]"
+    }
+   },
+   "sets_cookies": [
+    "ST"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/as/.well-known/openid-configuration",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "application/jwk-set+json, application/json",
+    "origin": "https://fantasy.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "__cf_bm"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/as/token",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "application/json",
+    "content-length": "[REDACTED]",
+    "content-type": "application/x-www-form-urlencoded",
+    "origin": "https://fantasy.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": {
+    "form": {
+     "grant_type": "[REDACTED]",
+     "redirect_uri": "[REDACTED]",
+     "code": "[REDACTED]",
+     "code_verifier": "[REDACTED]",
+     "client_id": "[REDACTED]"
+    }
+   },
+   "status": 200,
+   "sets_cookies": [
+    "__cf_bm"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/me/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, cf_clearance, datadome, global_sso_id, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-authorization": "[REDACTED]",
+    "x-api-language": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "pl_ism_data"
+   ],
+   "response": {
+    "json_shape": {
+     "player": {
+      "date_of_birth": "[REDACTED]",
+      "default_event": "<int>",
+      "dirty": "<bool>",
+      "first_name": "<str>",
+      "gender": "<str>",
+      "id": "<int>",
+      "last_name": "<str>",
+      "region": "<int>",
+      "email": "[REDACTED]",
+      "entry": "<int>",
+      "entry_email": "[REDACTED]",
+      "entry_language": "<NoneType>",
+      "sso_id": "<str>"
+     },
+     "watched": []
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/entry/11204042/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, cf_clearance, datadome, global_sso_id, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-authorization": "[REDACTED]",
+    "x-api-language": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "response": {
+    "json_shape": {
+     "id": "<int>",
+     "joined_time": "<str>",
+     "started_event": "<int>",
+     "favourite_team": "<NoneType>",
+     "player_first_name": "<str>",
+     "player_last_name": "<str>",
+     "player_region_id": "<int>",
+     "player_region_name": "<str>",
+     "player_region_iso_code_short": "[REDACTED]",
+     "player_region_iso_code_long": "[REDACTED]",
+     "years_active": "<int>",
+     "current_event": "<int>",
+     "leagues": {
+      "classic": [
+       {
+        "active_phases": [
+         {
+          "entry_percentile_rank": "<NoneType>",
+          "last_rank": "<int>",
+          "league_id": "<int>",
+          "phase": "<int>",
+          "rank": "<int>",
+          "rank_count": "<int>",
+          "rank_sort": "<int>",
+          "total": "<int>"
+         },
+         "... 2 items"
+        ],
+        "admin_entry": "<NoneType>",
+        "closed": "<bool>",
+        "created": "<str>",
+        "cup_league": "<NoneType>",
+        "cup_qualified": "<NoneType>",
+        "entry_can_admin": "<bool>",
+        "entry_can_invite": "<bool>",
+        "entry_can_leave": "<bool>",
+        "entry_last_rank": "<int>",
+        "entry_percentile_rank": "<NoneType>",
+        "entry_rank": "<int>",
+        "featured_entry_ids": [],
+        "has_cup": "<bool>",
+        "id": "<int>",
+        "league_type": "<str>",
+        "max_entries": "<NoneType>",
+        "name": "<str>",
+        "rank": "<NoneType>",
+        "rank_count": "<int>",
+        "scoring": "<str>",
+        "short_name": "<str>",
+        "start_event": "<int>"
+       },
+       "... 6 items"
+      ],
+      "h2h": [],
+      "cup": {
+       "matches": [],
+       "status": {
+        "qualification_event": "<NoneType>",
+        "qualification_numbers": "<NoneType>",
+        "qualification_rank": "<NoneType>",
+        "qualification_state": "[REDACTED]"
+       },
+       "cup_league": "<NoneType>"
+      },
+      "cup_matches": [],
+      "event": []
+     },
+     "name": "<str>",
+     "name_change_blocked": "<bool>",
+     "entered_events": [],
+     "kit": "<NoneType>",
+     "last_deadline_bank": "<NoneType>",
+     "last_deadline_value": "<NoneType>",
+     "last_deadline_total_transfers": "<int>",
+     "club_badge_src": "<NoneType>",
+     "summary_overall_points": "<int>",
+     "summary_event_points": "<int>",
+     "summary_event_rank": "<int>",
+     "summary_overall_rank": "<int>"
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/entry/11204042/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, cf_clearance, datadome, global_sso_id, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-authorization": "[REDACTED]",
+    "x-api-language": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "response": {
+    "json_shape": {
+     "id": "<int>",
+     "joined_time": "<str>",
+     "started_event": "<int>",
+     "favourite_team": "<NoneType>",
+     "player_first_name": "<str>",
+     "player_last_name": "<str>",
+     "player_region_id": "<int>",
+     "player_region_name": "<str>",
+     "player_region_iso_code_short": "[REDACTED]",
+     "player_region_iso_code_long": "[REDACTED]",
+     "years_active": "<int>",
+     "current_event": "<int>",
+     "leagues": {
+      "classic": [
+       {
+        "active_phases": [
+         {
+          "entry_percentile_rank": "<NoneType>",
+          "last_rank": "<int>",
+          "league_id": "<int>",
+          "phase": "<int>",
+          "rank": "<int>",
+          "rank_count": "<int>",
+          "rank_sort": "<int>",
+          "total": "<int>"
+         },
+         "... 2 items"
+        ],
+        "admin_entry": "<NoneType>",
+        "closed": "<bool>",
+        "created": "<str>",
+        "cup_league": "<NoneType>",
+        "cup_qualified": "<NoneType>",
+        "entry_can_admin": "<bool>",
+        "entry_can_invite": "<bool>",
+        "entry_can_leave": "<bool>",
+        "entry_last_rank": "<int>",
+        "entry_percentile_rank": "<NoneType>",
+        "entry_rank": "<int>",
+        "featured_entry_ids": [],
+        "has_cup": "<bool>",
+        "id": "<int>",
+        "league_type": "<str>",
+        "max_entries": "<NoneType>",
+        "name": "<str>",
+        "rank": "<NoneType>",
+        "rank_count": "<int>",
+        "scoring": "<str>",
+        "short_name": "<str>",
+        "start_event": "<int>"
+       },
+       "... 6 items"
+      ],
+      "h2h": [],
+      "cup": {
+       "matches": [],
+       "status": {
+        "qualification_event": "<NoneType>",
+        "qualification_numbers": "<NoneType>",
+        "qualification_rank": "<NoneType>",
+        "qualification_state": "[REDACTED]"
+       },
+       "cup_league": "<NoneType>"
+      },
+      "cup_matches": [],
+      "event": []
+     },
+     "name": "<str>",
+     "name_change_blocked": "<bool>",
+     "entered_events": [],
+     "kit": "<NoneType>",
+     "last_deadline_bank": "<NoneType>",
+     "last_deadline_value": "<NoneType>",
+     "last_deadline_total_transfers": "<int>",
+     "club_badge_src": "<NoneType>",
+     "summary_overall_points": "<int>",
+     "summary_event_points": "<int>",
+     "summary_event_rank": "<int>",
+     "summary_overall_rank": "<int>"
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/my-team/11204042/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, cf_clearance, datadome, global_sso_id, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-authorization": "[REDACTED]",
+    "x-api-language": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "pl_ism_data"
+   ],
+   "response": {
+    "json_shape": {
+     "picks": [
+      {
+       "element": "<int>",
+       "position": "<int>",
+       "multiplier": "<int>",
+       "is_captain": "<bool>",
+       "is_vice_captain": "<bool>",
+       "element_type": "<int>",
+       "selling_price": "<int>",
+       "purchase_price": "<int>"
+      },
+      "... 15 items"
+     ],
+     "picks_last_updated": "<str>",
+     "chips": [
+      {
+       "id": "<int>",
+       "status_for_entry": "<str>",
+       "played_by_entry": [],
+       "name": "<str>",
+       "number": "<int>",
+       "start_event": "<int>",
+       "stop_event": "<int>",
+       "chip_type": "<str>",
+       "is_pending": "<bool>"
+      },
+      "... 4 items"
+     ],
+     "transfers": {
+      "cost": "<int>",
+      "status": "<str>",
+      "limit": "<NoneType>",
+      "made": "<int>",
+      "bank": "<int>",
+      "value": "<int>"
+     }
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "url": {
+    "host": "account.premierleague.com",
+    "path": "/as/userinfo",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "authorization": "Bearer [REDACTED]",
+    "origin": "https://fantasy.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]"
+   },
+   "request_body": null,
+   "status": 200,
+   "sets_cookies": [
+    "__cf_bm"
+   ],
+   "response": {
+    "content_type": "application/json"
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/my-team/11204042/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "content-length": "[REDACTED]",
+    "content-type": "application/json",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __eoi, __gads, __gpi, cf_clearance, datadome, global_sso_id, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "origin": "https://fantasy.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-authorization": "[REDACTED]",
+    "x-api-language": "[REDACTED]",
+    "x-csrftoken": "[REDACTED]"
+   },
+   "request_body": {
+    "json": {
+     "chip": "bboost",
+     "picks": [
+      {
+       "element": 1,
+       "position": 1,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 112,
+       "position": 2,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 4,
+       "position": 3,
+       "is_captain": false,
+       "is_vice_captain": true
+      },
+      {
+       "element": 566,
+       "position": 4,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 60,
+       "position": 5,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 427,
+       "position": 6,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 68,
+       "position": 7,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 542,
+       "position": 8,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 183,
+       "position": 9,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 411,
+       "position": 10,
+       "is_captain": true,
+       "is_vice_captain": false
+      },
+      {
+       "element": 249,
+       "position": 11,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 385,
+       "position": 12,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 346,
+       "position": 13,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 115,
+       "position": 14,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 15,
+       "position": 15,
+       "is_captain": false,
+       "is_vice_captain": false
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "sets_cookies": [
+    "pl_ism_data"
+   ],
+   "response": {
+    "json": {
+     "picks": [
+      {
+       "element": 1,
+       "position": 1,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 1,
+       "selling_price": 62,
+       "purchase_price": 62
+      },
+      {
+       "element": 112,
+       "position": 2,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 49,
+       "purchase_price": 49
+      },
+      {
+       "element": 4,
+       "position": 3,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": true,
+       "element_type": 2,
+       "selling_price": 79,
+       "purchase_price": 79
+      },
+      {
+       "element": 566,
+       "position": 4,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 50,
+       "purchase_price": 50
+      },
+      {
+       "element": 60,
+       "position": 5,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 55,
+       "purchase_price": 55
+      },
+      {
+       "element": 427,
+       "position": 6,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 79,
+       "purchase_price": 79
+      },
+      {
+       "element": 68,
+       "position": 7,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 64,
+       "purchase_price": 64
+      },
+      {
+       "element": 542,
+       "position": 8,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 57,
+       "purchase_price": 57
+      },
+      {
+       "element": 183,
+       "position": 9,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 49,
+       "purchase_price": 49
+      },
+      {
+       "element": 411,
+       "position": 10,
+       "multiplier": 2,
+       "is_captain": true,
+       "is_vice_captain": false,
+       "element_type": 4,
+       "selling_price": 158,
+       "purchase_price": 158
+      },
+      {
+       "element": 249,
+       "position": 11,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 4,
+       "selling_price": 56,
+       "purchase_price": 56
+      },
+      {
+       "element": 385,
+       "position": 12,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 1,
+       "selling_price": 50,
+       "purchase_price": 50
+      },
+      {
+       "element": 346,
+       "position": 13,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 4,
+       "selling_price": 61,
+       "purchase_price": 61
+      },
+      {
+       "element": 115,
+       "position": 14,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 53,
+       "purchase_price": 53
+      },
+      {
+       "element": 15,
+       "position": 15,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 67,
+       "purchase_price": 67
+      }
+     ],
+     "picks_last_updated": "2026-10-30T20:41:29.255491Z",
+     "chips": [
+      {
+       "id": 4,
+       "status_for_entry": "active",
+       "played_by_entry": [
+        9
+       ],
+       "name": "bboost",
+       "number": 1,
+       "start_event": 1,
+       "stop_event": 19,
+       "chip_type": "team",
+       "is_pending": false
+      },
+      {
+       "id": 5,
+       "status_for_entry": "unavailable",
+       "played_by_entry": [],
+       "name": "3xc",
+       "number": 1,
+       "start_event": 1,
+       "stop_event": 19,
+       "chip_type": "team",
+       "is_pending": false
+      },
+      {
+       "id": 1,
+       "status_for_entry": "unavailable",
+       "played_by_entry": [],
+       "name": "wildcard",
+       "number": 1,
+       "start_event": 2,
+       "stop_event": 19,
+       "chip_type": "transfer",
+       "is_pending": false
+      },
+      {
+       "id": 3,
+       "status_for_entry": "unavailable",
+       "played_by_entry": [],
+       "name": "freehit",
+       "number": 1,
+       "start_event": 2,
+       "stop_event": 19,
+       "chip_type": "transfer",
+       "is_pending": false
+      }
+     ],
+     "transfers": {
+      "cost": 4,
+      "status": "unlimited",
+      "limit": null,
+      "made": 0,
+      "bank": 11,
+      "value": 989
+     }
+    }
+   }
+  },
+  {
+   "method": "POST",
+   "url": {
+    "host": "fantasy.premierleague.com",
+    "path": "/api/my-team/11204042/",
+    "query": {}
+   },
+   "request_headers": {
+    "accept": "*/*",
+    "baggage": "[REDACTED]",
+    "content-length": "[REDACTED]",
+    "content-type": "application/json",
+    "cookie": "names: AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg, OptanonAlertBoxClosed, OptanonConsent, __eoi, __gads, __gpi, cf_clearance, datadome, global_sso_id, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster, kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity, optimizelyEndUserId, req_language, s_nr",
+    "origin": "https://fantasy.premierleague.com",
+    "priority": "[REDACTED]",
+    "sec-fetch-dest": "[REDACTED]",
+    "sec-fetch-mode": "[REDACTED]",
+    "sec-fetch-site": "[REDACTED]",
+    "sentry-trace": "[REDACTED]",
+    "x-api-authorization": "[REDACTED]",
+    "x-api-language": "[REDACTED]",
+    "x-csrftoken": "[REDACTED]"
+   },
+   "request_body": {
+    "json": {
+     "chip": "bboost",
+     "picks": [
+      {
+       "element": 1,
+       "position": 1,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 112,
+       "position": 2,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 4,
+       "position": 3,
+       "is_captain": false,
+       "is_vice_captain": true
+      },
+      {
+       "element": 566,
+       "position": 4,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 60,
+       "position": 5,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 427,
+       "position": 6,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 68,
+       "position": 7,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 542,
+       "position": 8,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 183,
+       "position": 9,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 411,
+       "position": 10,
+       "is_captain": true,
+       "is_vice_captain": false
+      },
+      {
+       "element": 249,
+       "position": 11,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 385,
+       "position": 12,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 346,
+       "position": 13,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 15,
+       "position": 14,
+       "is_captain": false,
+       "is_vice_captain": false
+      },
+      {
+       "element": 115,
+       "position": 15,
+       "is_captain": false,
+       "is_vice_captain": false
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "sets_cookies": [
+    "pl_ism_data"
+   ],
+   "response": {
+    "json": {
+     "picks": [
+      {
+       "element": 1,
+       "position": 1,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 1,
+       "selling_price": 62,
+       "purchase_price": 62
+      },
+      {
+       "element": 112,
+       "position": 2,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 49,
+       "purchase_price": 49
+      },
+      {
+       "element": 4,
+       "position": 3,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": true,
+       "element_type": 2,
+       "selling_price": 79,
+       "purchase_price": 79
+      },
+      {
+       "element": 566,
+       "position": 4,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 50,
+       "purchase_price": 50
+      },
+      {
+       "element": 60,
+       "position": 5,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 55,
+       "purchase_price": 55
+      },
+      {
+       "element": 427,
+       "position": 6,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 79,
+       "purchase_price": 79
+      },
+      {
+       "element": 68,
+       "position": 7,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 64,
+       "purchase_price": 64
+      },
+      {
+       "element": 542,
+       "position": 8,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 57,
+       "purchase_price": 57
+      },
+      {
+       "element": 183,
+       "position": 9,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 49,
+       "purchase_price": 49
+      },
+      {
+       "element": 411,
+       "position": 10,
+       "multiplier": 2,
+       "is_captain": true,
+       "is_vice_captain": false,
+       "element_type": 4,
+       "selling_price": 158,
+       "purchase_price": 158
+      },
+      {
+       "element": 249,
+       "position": 11,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 4,
+       "selling_price": 56,
+       "purchase_price": 56
+      },
+      {
+       "element": 385,
+       "position": 12,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 1,
+       "selling_price": 50,
+       "purchase_price": 50
+      },
+      {
+       "element": 346,
+       "position": 13,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 4,
+       "selling_price": 61,
+       "purchase_price": 61
+      },
+      {
+       "element": 15,
+       "position": 14,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 3,
+       "selling_price": 67,
+       "purchase_price": 67
+      },
+      {
+       "element": 115,
+       "position": 15,
+       "multiplier": 1,
+       "is_captain": false,
+       "is_vice_captain": false,
+       "element_type": 2,
+       "selling_price": 53,
+       "purchase_price": 53
+      }
+     ],
+     "picks_last_updated": "2026-10-30T21:16:33.376667Z",
+     "chips": [
+      {
+       "id": 4,
+       "status_for_entry": "active",
+       "played_by_entry": [
+        9
+       ],
+       "name": "bboost",
+       "number": 1,
+       "start_event": 1,
+       "stop_event": 19,
+       "chip_type": "team",
+       "is_pending": false
+      },
+      {
+       "id": 5,
+       "status_for_entry": "unavailable",
+       "played_by_entry": [],
+       "name": "3xc",
+       "number": 1,
+       "start_event": 1,
+       "stop_event": 19,
+       "chip_type": "team",
+       "is_pending": false
+      },
+      {
+       "id": 1,
+       "status_for_entry": "unavailable",
+       "played_by_entry": [],
+       "name": "wildcard",
+       "number": 1,
+       "start_event": 2,
+       "stop_event": 19,
+       "chip_type": "transfer",
+       "is_pending": false
+      },
+      {
+       "id": 3,
+       "status_for_entry": "unavailable",
+       "played_by_entry": [],
+       "name": "freehit",
+       "number": 1,
+       "start_event": 2,
+       "stop_event": 19,
+       "chip_type": "transfer",
+       "is_pending": false
+      }
+     ],
+     "transfers": {
+      "cost": 4,
+      "status": "unlimited",
+      "limit": null,
+      "made": 0,
+      "bank": 11,
+      "value": 989
+     }
+    }
+   }
+  }
+ ]
+}
