@@ -46,19 +46,32 @@ def check_access(repo: Path, token: str) -> None:
 
 
 def commit_and_push(repo: Path, files: list[Path], message: str, token: str | None) -> bool:
-    """Commit `files` and push the current branch. Returns False if there was nothing to commit.
+    """Commit `files`, bring in any new commits from GitHub, and push. Returns whether a commit was made.
 
-    If the push fails the commit stays local and GitError is raised; the next
-    successful push carries it (system-flow.md, section 9).
+    Commits left unpushed by an earlier failure are pushed too. If the push still
+    fails, the commit stays local and GitError is raised; the next successful push
+    carries it (system-flow.md, section 9).
     """
     rel = [str(Path(f).resolve().relative_to(repo.resolve())) for f in files]
     _git(repo, "add", "--", *rel)
-    if not _git(repo, "diff", "--cached", "--name-only").strip():
-        return False
-    _git(repo, "commit", "-m", message)
+    committed = bool(_git(repo, "diff", "--cached", "--name-only").strip())
+    if committed:
+        _git(repo, "commit", "-m", message)
     push(repo, token)
-    return True
+    return committed
+
+
+def current_branch(repo: Path) -> str:
+    return _git(repo, "rev-parse", "--abbrev-ref", "HEAD").strip()
 
 
 def push(repo: Path, token: str | None) -> None:
-    _git(repo, "push", "origin", "HEAD", token=token)
+    """Merge the remote branch (never rebase or force) and push the current branch."""
+    branch = current_branch(repo)
+    try:
+        _git(repo, "pull", "--no-rebase", "--no-edit", "origin", branch, token=token)
+    except GitError:
+        # A conflicting merge must not leave the working copy half-merged.
+        subprocess.run(["git", "merge", "--abort"], cwd=repo, capture_output=True)
+        raise
+    _git(repo, "push", "origin", f"HEAD:{branch}", token=token)
