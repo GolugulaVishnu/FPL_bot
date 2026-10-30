@@ -248,7 +248,7 @@ def cmd_pick(args) -> int:
     from datetime import datetime, timezone
     from .data import load_current
     from .datastore import DataStore
-    from .model.project import project_upcoming
+    from .model.project import project_with_context
     from .plan import card, chips, rules as squad_rules, squad
     from .sources.current import season_label
 
@@ -260,7 +260,7 @@ def cmd_pick(args) -> int:
         return 1
     ds = DataStore(paths.db_path())
     load_current(ds, boot, fx, lives)
-    gws, projs = project_upcoming(ds, boot, fx, now, args.horizon)
+    gws, projs, ctx = project_with_context(ds, boot, fx, now, args.horizon)
     if not gws:
         print("No upcoming gameweek.")
         return 1
@@ -309,7 +309,7 @@ def cmd_pick(args) -> int:
                        model_version=_git_version(),
                        data_note=(f"snapshot {args.snapshot}" if args.snapshot else f"FPL API, read {now.strftime('%Y-%m-%d %H:%M UTC')}")
                                  + f"; {len(lives)} finished gameweeks loaded",
-                       team_name=TEAM_NAME, extra_notes=notes)
+                       team_name=TEAM_NAME, extra_notes=notes, ctx=ctx)
     out = card.card_path(paths.REPO_ROOT, season, g0, args.kind)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text, encoding="utf-8")

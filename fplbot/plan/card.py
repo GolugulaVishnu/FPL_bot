@@ -10,7 +10,7 @@ from pathlib import Path
 
 from ..model.project import PlayerProjection
 from .chips import ChipDecision
-from .reasons import player_reasons, squad_story
+from .reasons import club_lines, player_reasons, squad_story
 from .squad import SquadPlan
 
 CHIP_NAMES = {"bboost": "Bench Boost", "3xc": "Triple Captain", "wildcard": "Wildcard", "freehit": "Free Hit", None: "none"}
@@ -35,7 +35,7 @@ def _row(p: PlayerProjection, g0: int, opp: str, tag: str = "") -> str:
 def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime, plan: SquadPlan,
            chip: ChipDecision, all_projs: list[PlayerProjection], opponents: dict[int, str],
            budget: int, mode: str, model_version: str, data_note: str, team_name: str | None,
-           extra_notes: list[str] | None = None) -> str:
+           extra_notes: list[str] | None = None, ctx=None) -> str:
     g0 = plan.gws[0]
     horizon = f"GW{plan.gws[0]}-{plan.gws[-1]}"
     cap_mult = 3 if chip.chip == "3xc" else 2
@@ -88,6 +88,10 @@ def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime
     L.append("CHIPS")
     for line in chip.lines:
         L.append(f"  {line}")
+    L.append("")
+
+    L.append("CLUBS IN THE SQUAD")
+    L.extend(club_lines(plan, ctx))
     L.append("")
 
     L.append("WHY EACH PLAYER")

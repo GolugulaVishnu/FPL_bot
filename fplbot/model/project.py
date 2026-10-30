@@ -27,11 +27,35 @@ class PlayerProjection:
     notes: list[str] = field(default_factory=list)
     # Evidence behind the numbers, for the decision card's reasoning.
     fixtures_by_gw: dict[int, list[str]] = field(default_factory=dict)   # e.g. {9: ["LIV (A)"]}
+    # Same projection against a league-average opponent: the gap to xp_by_gw is the fixture effect.
+    neutral_by_gw: dict[int, float] = field(default_factory=dict)
     evidence: dict[str, float] = field(default_factory=dict)             # p_play, p60, xg90, xa90, ...
 
     @property
     def total(self) -> float:
         return sum(self.xp_by_gw.values())
+
+
+@dataclass
+class TeamStrength:
+    attack: float      # expected goals created relative to league average (1.0 = average)
+    defence: float     # expected goals conceded relative to league average (lower is better)
+    opponents: dict[int, list[tuple[str, bool]]] = field(default_factory=dict)  # gw -> [(short name, home)]
+
+
+@dataclass
+class TeamContext:
+    mean_xg: float
+    home_factor: float
+    teams: dict[str, TeamStrength]   # by short name
+
+    def opponent_average(self, short: str, gws: list[int]) -> tuple[float, float]:
+        """Average (attack, defence) of a team's opponents over `gws`."""
+        opps = [o for g in gws for o, _h in self.teams[short].opponents.get(g, [])]
+        if not opps:
+            return 1.0, 1.0
+        return (sum(self.teams[o].attack for o in opps) / len(opps),
+                sum(self.teams[o].defence for o in opps) / len(opps))
 
 
 def previous_season(season: str) -> str:
@@ -41,12 +65,19 @@ def previous_season(season: str) -> str:
 
 def project_upcoming(store: DataStore, bootstrap: dict, fixtures_json: list, now: datetime,
                      horizon: int = 6) -> tuple[list[int], list[PlayerProjection]]:
+    gws, projs, _ctx = project_with_context(store, bootstrap, fixtures_json, now, horizon)
+    return gws, projs
+
+
+def project_with_context(store: DataStore, bootstrap: dict, fixtures_json: list, now: datetime,
+                         horizon: int = 6) -> tuple[list[int], list[PlayerProjection], TeamContext | None]:
+    """Like project_upcoming, plus the team ratings and fixtures behind the numbers."""
     season = season_label(bootstrap)
     upcoming = sorted((e for e in bootstrap["events"]
                        if datetime.fromisoformat(e["deadline_time"].replace("Z", "+00:00")) > now),
                       key=lambda e: e["id"])[:horizon]
     if not upcoming:
-        return [], []
+        return [], [], None
     gws = [e["id"] for e in upcoming]
     gw_start = {e["id"]: datetime.fromisoformat(e["deadline_time"].replace("Z", "+00:00")) for e in upcoming}
 
@@ -70,18 +101,19 @@ def project_upcoming(store: DataStore, bootstrap: dict, fixtures_json: list, now
         prof.position = pos
         notes = list(prof.notes)
         tc = state.team_code.get(el["team"])
-        xp_by_gw, parts_next, minutes_next, fixtures_by_gw = {}, {}, 0.0, {}
+        xp_by_gw, parts_next, minutes_next, fixtures_by_gw, neutral_by_gw = {}, {}, 0.0, {}, {}
         for i, gw in enumerate(gws):
             fac, why = availability.factor(el.get("status"), el.get("chance_of_playing_next_round"),
                                            el.get("news"), gw_start[gw], i, now)
             if why and i == 0:
                 notes.append(why)
-            total = 0.0
+            total, neutral = 0.0, 0.0
             fx = fixtures_by_team_gw.get((el["team"], gw), [])
             fixtures_by_gw[gw] = [f"{teams[o]['short_name']} ({'H' if h else 'A'})" for o, h in fx]
             for j, (opp, home) in enumerate(fx):
                 p = project_fixture(prof, tc, state.team_code.get(opp), home, state.ratings, pts, fac)
                 total += p.xp
+                neutral += project_fixture(prof, tc, None, home, state.ratings, pts, fac).xp
                 if i == 0:
                     minutes_next += p.exp_minutes
                     for k, v in p.parts.items():
@@ -91,15 +123,24 @@ def project_upcoming(store: DataStore, bootstrap: dict, fixtures_json: list, now
             if len(fx) > 1 and i == 0:
                 notes.append(f"{len(fx)} fixtures next gameweek (double)")
             xp_by_gw[gw] = total
+            neutral_by_gw[gw] = neutral
         out.append(PlayerProjection(
             element=el["id"], code=el["code"], name=el["web_name"], team=teams[el["team"]]["short_name"],
             position=pos, price=el["now_cost"], status=el.get("status", "a"), xp_by_gw=xp_by_gw,
             parts_next=parts_next, minutes_next=minutes_next, notes=notes, fixtures_by_gw=fixtures_by_gw,
+            neutral_by_gw=neutral_by_gw,
             evidence={"p_play": prof.p_play, "p60": prof.p60, "mins_if_play": prof.mins_if_play,
                       "xg90": prof.rates.get("xg", 0.0), "xa90": prof.rates.get("xa", 0.0),
                       "saves90": prof.rates.get("saves", 0.0), "bonus90": prof.rates.get("bonus", 0.0),
                       "dc_hit": prof.dc_hit, "n_matches": float(prof.n_matches), "nineties": prof.nineties}))
-    return gws, out
+    rt = state.ratings
+    ctx = TeamContext(rt.mean_xg, rt.home_factor, {})
+    for tid, t in teams.items():
+        code = state.team_code.get(tid)
+        ctx.teams[t["short_name"]] = TeamStrength(
+            attack=rt.attack.get(code, 1.0), defence=rt.defence.get(code, 1.0),
+            opponents={g: [(teams[o]["short_name"], h) for o, h in fixtures_by_team_gw.get((tid, g), [])] for g in gws})
+    return gws, out, ctx
 
 
 def format_table(gws: list[int], projs: list[PlayerProjection], top: int = 30, position: str | None = None) -> str:

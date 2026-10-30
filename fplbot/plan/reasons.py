@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ..model.project import PlayerProjection
+from statistics import median
+
+from ..model.project import PlayerProjection, TeamContext
 from .squad import SquadPlan
 
 PART_WORDS = {
@@ -89,6 +91,48 @@ def _alternative(p: PlayerProjection, plan: SquadPlan, pool: list[PlayerProjecti
             f"but {why}")
 
 
+def _fixture_split(p: PlayerProjection, gws: list[int]) -> str | None:
+    if not p.neutral_by_gw:
+        return None
+    neutral = sum(p.neutral_by_gw.get(g, 0.0) for g in gws)
+    effect = p.total - neutral
+    word = "easier" if effect > 0 else "harder"
+    return (f"{neutral:.1f} of his {p.total:.1f} would come against average opponents; his fixtures are "
+            f"{word} than average, worth {effect:+.1f}")
+
+
+def _pct(x: float) -> str:
+    return f"{abs(x - 1) * 100:.0f}% {'above' if x > 1 else 'below'} average"
+
+
+def club_lines(plan: SquadPlan, ctx: TeamContext | None) -> list[str]:
+    if ctx is None:
+        return ["  Team ratings not available."]
+    lines = [f"  Ratings come from expected goals for and against, recent matches weighted more (1.00 = league average)."]
+    for club, n in Counter(p.team for p in plan.squad).most_common():
+        t = ctx.teams.get(club)
+        if t is None:
+            continue
+        o_att, o_def = ctx.opponent_average(club, plan.gws)
+        run = ", ".join(f"{o} ({'H' if h else 'A'})" for g in plan.gws for o, h in t.opponents.get(g, [])) or "none"
+        conc = abs(t.defence - 1) * 100
+        conc_txt = "about average" if conc < 1 else f"{conc:.0f}% {'more' if t.defence > 1 else 'less'} than average"
+        lines.append(f"  {club} x{n}: attack {t.attack:.2f} (creates {_pct(t.attack)}), defence {t.defence:.2f} "
+                     f"(concedes {conc_txt}).")
+        lines.append(f"    Opponents GW{plan.gws[0]}-{plan.gws[-1]}: {run}. Their average attack {o_att:.2f}, "
+                     f"average defence {o_def:.2f}.")
+    return lines
+
+
+def position_value(pool: list[PlayerProjection]) -> dict[str, float]:
+    """Median expected points per £m over the horizon, among players expected to play 60+ minutes."""
+    out = {}
+    for pos in ("GKP", "DEF", "MID", "FWD"):
+        vals = [p.total / (p.price / 10) for p in pool if p.position == pos and p.minutes_next >= 60 and p.price]
+        out[pos] = median(vals) if vals else 0.0
+    return out
+
+
 def player_reasons(plan: SquadPlan, pool: list[PlayerProjection]) -> list[str]:
     g0 = plan.gws[0]
     clubs = Counter(p.team for p in plan.squad)
@@ -104,6 +148,9 @@ def player_reasons(plan: SquadPlan, pool: list[PlayerProjection]) -> list[str]:
         lines.append(f"    Minutes: {_minutes_line(p)}.")
         lines.append(f"    Points come from: {_drivers(p)}.")
         lines.append(f"    Fixtures: {_fixture_run(p, plan.gws)}.")
+        split = _fixture_split(p, plan.gws)
+        if split:
+            lines.append(f"    Fixtures vs form: {split}.")
         lines.append(f"    Value: #{rank} of {of} {POS_WORDS[p.position]} for xP per £m over the horizon.")
         lines.append(f"    Versus alternatives: {_alternative(p, plan, pool, full)}.")
         if p.notes:
@@ -135,12 +182,16 @@ def squad_story(plan: SquadPlan, pool: list[PlayerProjection], budget: int) -> l
                  f"({priciest.total:.1f} xP over the horizon). That leaves {(budget - priciest.price) / 10:.1f}m "
                  f"for the other 14, about {(budget - priciest.price) / 140:.1f}m each.")
     lines.append(f"  4. Money by position: GKP {spend['GKP'] / 10:.1f}m, DEF {spend['DEF'] / 10:.1f}m, "
-                 f"MID {spend['MID'] / 10:.1f}m, FWD {spend['FWD'] / 10:.1f}m. Defenders' projected defensive "
-                 f"contribution points in GW{g0}: {dc_def:.1f} of their {xp_def:.1f} total.")
+                 f"MID {spend['MID'] / 10:.1f}m, FWD {spend['FWD'] / 10:.1f}m.")
+    pv = position_value(pool)
+    best = max(pv, key=pv.get)
+    lines.append(f"     Value by position (median xP per £m over the horizon, players expected to play 60+): "
+                 + ", ".join(f"{k} {v:.2f}" for k, v in pv.items()) + f". Best value right now: {POS_WORDS[best]}.")
+    lines.append(f"     Defensive contribution points are {dc_def:.1f} of the defenders' {xp_def:.1f} projected in GW{g0}.")
     lines.append(f"  5. Formation {formation}: the XI is whichever 11 project most in GW{g0} within the formation rules.")
     if stacks:
-        lines.append(f"  6. Clubs with more than one player: {', '.join(stacks)}. Each is there on his own numbers "
-                     f"(see WHY EACH PLAYER); the optimiser has no club preference beyond the 3-player limit.")
+        lines.append(f"  6. Clubs with more than one player: {', '.join(stacks)}. The optimiser has no club preference "
+                     f"beyond the 3-player limit; the club ratings and fixtures behind these picks are under CLUBS.")
     lines.append(f"  7. Bench: {bench_cost / 10:.1f}m on 4 players projecting {bench_xp:.1f} in GW{g0}. "
                  f"Bench points count at 10% in the optimiser (auto-sub cover), so cheap but playing bench players win.")
     lines.append(f"  8. Captain: the starter with the highest GW{g0} projection; vice: next highest who is expected "

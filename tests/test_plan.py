@@ -70,7 +70,8 @@ def test_card_explains_every_player():
     now = datetime(2026, 10, 30, tzinfo=timezone.utc)
     text = card.render(season="2026-27", gw=9, kind="draft", deadline=now, now=now, plan=plan, chip=d, all_projs=projs,
                        opponents={}, budget=1000, mode="test", model_version="x", data_note="test", team_name=None)
-    assert "HOW THE SQUAD WAS BUILT" in text and "WHY EACH PLAYER" in text
+    assert "HOW THE SQUAD WAS BUILT" in text and "WHY EACH PLAYER" in text and "CLUBS IN THE SQUAD" in text
+    assert "Value by position" in text
     for p in plan.squad:
         assert f"  {p.name} ({p.team}, {p.position}" in text
     assert text.count("Versus alternatives:") == 15
