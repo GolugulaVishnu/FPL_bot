@@ -18,9 +18,12 @@ log = logging.getLogger("fplbot.tick")
 TAKEOVER_ALERT_EVERY_S = 3600
 
 
+NOT_BUILT = "not built yet, skipped"
+
+
 def _not_built(job: str) -> Callable[..., str]:
     def handler(ctx: dict) -> str:
-        return f"{job}: not built yet, skipped"
+        return f"{job}: {NOT_BUILT}"
     return handler
 
 
@@ -134,8 +137,10 @@ def _run_locked(cfg, now, machine, ntfy, client, store) -> str:
     for job in jobs:
         try:
             detail = HANDLERS[job](ctx)
-            key, value = _DONE[job]
-            store.set_state(key, value(now, ev, chk))
+            # A placeholder must not mark its job done, or the real job would skip that gameweek later.
+            if not detail.endswith(NOT_BUILT):
+                key, value = _DONE[job]
+                store.set_state(key, value(now, ev, chk))
             store.log_run(machine, job, "ok", detail)
             results.append(detail)
         except Exception as e:  # each job fails on its own; retries come from the next tick
