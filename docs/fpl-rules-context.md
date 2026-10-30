@@ -2,7 +2,7 @@
 
 ```yaml
 title: Fantasy Premier League rules knowledge base (Classic game, Classic and H2H leagues, cups)
-version: v2.4
+version: v2.5
 rules_baseline: "2026/27 season, verified 2026-10-29 at GW9 (GW8 finished; GW9 deadline 2026-10-31T11:00Z)"
 authoritative_sources:
   - Official rules page, rendered in a browser 2026-10-29: https://fantasy.premierleague.com/help/rules
@@ -411,7 +411,7 @@ Tags: `[OFFICIAL-API]` = observed in live API data or config. `[OFFICIAL-NEWS]` 
 
 **Mode: autonomous.** The account owner has decided the bot runs the team by itself. Each gameweek it logs in, computes transfers, XI, bench order, captain, vice-captain and chip decision, and makes and confirms every move itself before the deadline. It writes each decision and action, with its reasoning, to a decision card for the owner to review. There is no human veto: the owner's role is to review cards and change the code to fix biases and wrong assumptions. The full run sequence is in `docs/system-flow.md`.
 
-- The owner created the FPL account for `soohzabimaru864@gmail.com` on 2026-10-30. The bot only logs in; it never registers accounts. If login shows a CAPTCHA or other human check, the bot stops and asks the owner to complete that step; it never works around it. No squad is picked until go-live, after a 2-gameweek dry run.
+- The owner created the FPL account for `soohzabimaru864@gmail.com` on 2026-10-30. The bot only logs in; it never registers accounts. If login shows a CAPTCHA or other human check, the bot stops and asks the owner to complete that step; it never works around it. There is no dry run: the bot plays from GW9. GW9 is entered by the owner by hand from the bot's decision card; automated submission starts at GW10 after a check-only login run.
 - The bot runs on the owner's own machines: Windows primary, macOS backup. It never logs in from cloud servers.
 - The bot may store the owner's password, session and tokens. The owner enters the FPL password once per machine through the bot's setup command, which saves it to the OS keychain (Windows Credential Manager, macOS Keychain). Secrets stay out of the repository (OS keychain, environment variables or a git-ignored secrets file) and never expose credentials or API keys in logs, decision cards or calls to anything other than the FPL login and Game endpoints.
 - Login runs through PingOne OAuth 2.0 / OIDC with PKCE at account.premierleague.com (B9).
@@ -734,6 +734,7 @@ news_keywords: [changes, new, chip, "free transfer", rules, "Second Chance", Cup
 
 | Version | Date | Change |
 |---|---|---|
+| v2.5 | 2026-10-30 | C1: dry run dropped at the owner's request; the bot plays from GW9 (entered by hand from the decision card), automated submission from GW10. |
 | v2.4 | 2026-10-30 | DATA (D5 first-run check) against the live snapshot in `samples/2026-10-30/`: every `game_settings` value, chip window, position limit, deadline and scoring value matches the baseline; all must-be-zero scoring keys are 0. Recorded `phases_count: 11` (includes Overall) and the scoring value shapes. `game_config.rules` mirrors `game_settings` except `timezone`. Page hashes still unset. |
 | v2.3 | 2026-10-30 | Repo made private; C1 note updated. |
 | v2.2 | 2026-10-30 | Owner created the FPL account; the bot logs in only and never signs up. Password entry via the setup command into the OS keychain. |

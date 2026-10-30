@@ -234,6 +234,98 @@ def cmd_project(args) -> int:
     return 0
 
 
+TEAM_NAME = "xP Machine"
+
+
+def _git_version() -> str:
+    import subprocess
+    r = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=paths.REPO_ROOT, capture_output=True, text=True)
+    return r.stdout.strip() or "unknown"
+
+
+def cmd_pick(args) -> int:
+    """Build this gameweek's team and decision card. Submission to FPL is not automated yet."""
+    from datetime import datetime, timezone
+    from .data import load_current
+    from .datastore import DataStore
+    from .model.project import project_upcoming
+    from .plan import card, chips, rules as squad_rules, squad
+    from .sources.current import season_label
+
+    now = datetime.fromisoformat(args.at).replace(tzinfo=timezone.utc) if args.at else datetime.now(timezone.utc)
+    try:
+        boot, fx, lives = _current_data(args)
+    except (FplBlocked, FplError) as e:
+        print(f"Could not read FPL data: {e}")
+        return 1
+    ds = DataStore(paths.db_path())
+    load_current(ds, boot, fx, lives)
+    gws, projs = project_upcoming(ds, boot, fx, now, args.horizon)
+    if not gws:
+        print("No upcoming gameweek.")
+        return 1
+    g0 = gws[0]
+    rules = squad_rules.from_bootstrap(boot)
+    team_of = {e["id"]: e["team"] for e in boot["elements"]}
+    plan = squad.pick_squad(projs, gws, rules, team_of)
+
+    squad_dicts = [dict(element=p.element, position=p.position, team=team_of[p.element], price=p.price) for p in plan.squad]
+    errors = squad_rules.validate(rules, squad_dicts, [p.element for p in plan.xi], [p.element for p in plan.bench],
+                                  plan.captain.element, plan.vice.element)
+    if errors:
+        print("The picked team breaks the rules, so no card was written:\n  " + "\n  ".join(errors))
+        return 1
+
+    available = {c["name"] for c in boot.get("chips", []) if c.get("start_event", 0) <= g0 <= c.get("stop_event", 38)}
+    decision = chips.decide(plan, available, first_gameweek=True)
+
+    short = {t["id"]: t["short_name"] for t in boot["teams"]}
+    opponents: dict[int, str] = {}
+    for f in fx:
+        if f.get("event") != g0:
+            continue
+        for p in plan.squad:
+            t = team_of[p.element]
+            if t in (f["team_h"], f["team_a"]):
+                o = f"{short[f['team_a']]} (H)" if t == f["team_h"] else f"{short[f['team_h']]} (A)"
+                opponents[p.element] = (opponents[p.element] + ", " + o) if p.element in opponents else o
+
+    deadline = next(datetime.fromisoformat(e["deadline_time"].replace("Z", "+00:00")) for e in boot["events"] if e["id"] == g0)
+    season = season_label(boot)
+    notes = [
+        "",
+        "HOW THIS GAMEWEEK GETS ENTERED",
+        "  The bot cannot log in and submit yet, so enter this team on the FPL site by hand:",
+        f"  1. Pick Team: add the 15 players above (budget {rules.budget / 10:.1f}m).",
+        f"  2. Team name: {TEAM_NAME}. Favourite club: none.",
+        "  3. Starting XI and bench order exactly as above; set captain (C) and vice (V).",
+        f"  4. Chip: {card.CHIP_NAMES[decision.chip]}" + (" (activate it on the Pick Team page before saving)." if decision.chip else "."),
+        f"  5. Save before {deadline.strftime('%a %d %b %H:%M UTC')}.",
+    ]
+    text = card.render(season=season, gw=g0, kind=args.kind, deadline=deadline, now=now, plan=plan, chip=decision,
+                       all_projs=projs, opponents=opponents, budget=rules.budget,
+                       mode="Initial squad: the team has no players yet, so all 15 are picked freely "
+                            "(unlimited transfers before the team's first deadline).",
+                       model_version=_git_version(),
+                       data_note=(f"snapshot {args.snapshot}" if args.snapshot else f"FPL API, read {now.strftime('%Y-%m-%d %H:%M UTC')}")
+                                 + f"; {len(lives)} finished gameweeks loaded",
+                       team_name=TEAM_NAME, extra_notes=notes)
+    out = card.card_path(paths.REPO_ROOT, season, g0, args.kind)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text, encoding="utf-8")
+    print(text)
+    print(f"Saved {out.relative_to(paths.REPO_ROOT)}")
+    if args.push:
+        try:
+            gitops.commit_and_push(paths.REPO_ROOT, [out], f"Decision card {season} GW{g0} ({args.kind})",
+                                   secret_store.github_token())
+            print("Committed and pushed.")
+        except (gitops.GitError, secret_store.MissingSecret) as e:
+            print(f"Saved locally but not pushed: {e}")
+            return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="fplbot")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -278,6 +370,14 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--snapshot", help="use a samples/ folder instead of the live API ('latest' for the newest)")
     pr.add_argument("--at", help="pretend it is this UTC time, e.g. 2026-10-30T12:00 (testing)")
     pr.set_defaults(func=cmd_project)
+
+    pk = sub.add_parser("pick", help="pick this gameweek's team and write its decision card")
+    pk.add_argument("--kind", choices=["draft", "final"], default="final")
+    pk.add_argument("--horizon", type=int, default=6)
+    pk.add_argument("--push", action="store_true", help="commit and push the decision card")
+    pk.add_argument("--snapshot", help="use a samples/ folder instead of the live API ('latest' for the newest)")
+    pk.add_argument("--at", help="pretend it is this UTC time (testing)")
+    pk.set_defaults(func=cmd_pick)
 
     args = p.parse_args(argv)
     logs.setup()

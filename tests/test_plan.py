@@ -1,0 +1,57 @@
+from fplbot.model.project import PlayerProjection
+from fplbot.plan import chips, rules, squad
+
+GWS = [9, 10]
+
+
+def proj(i, pos, team, price, xp, mins=90):
+    return PlayerProjection(element=i, code=i, name=f"P{i}", team=f"T{team}", position=pos, price=price,
+                            status="a", xp_by_gw={9: xp, 10: xp}, parts_next={}, minutes_next=mins)
+
+
+def pool():
+    ps, i = [], 0
+    for pos, n in (("GKP", 6), ("DEF", 14), ("MID", 14), ("FWD", 9)):
+        for k in range(n):
+            i += 1
+            ps.append((proj(i, pos, team=i % 10, price=40 + 5 * (k % 6), xp=2 + (k % 6) * 0.8), i % 10))
+    # A star that every squad wants, and three cheap good players from one club to test the club limit.
+    i += 1
+    ps.append((proj(i, "FWD", 99, 150, 12.0), 99))
+    for j in range(4):
+        i += 1
+        ps.append((proj(i, "MID", 77, 45, 6.0), 77))
+    return [p for p, _ in ps], {p.element: t for p, t in ps}
+
+
+def test_pick_squad_obeys_rules_and_picks_obvious_players():
+    projs, team_of = pool()
+    r = rules.DEFAULT
+    plan = squad.pick_squad(projs, GWS, r, team_of)
+    sq = [dict(element=p.element, position=p.position, team=team_of[p.element], price=p.price) for p in plan.squad]
+    assert rules.validate(r, sq, [p.element for p in plan.xi], [p.element for p in plan.bench],
+                          plan.captain.element, plan.vice.element) == []
+    assert plan.captain.xp_by_gw[9] == 12.0
+    assert sum(1 for p in plan.squad if team_of[p.element] == 77) == 3
+    assert plan.bench[0].position == "GKP"
+
+
+def test_validate_catches_breaches():
+    r = rules.DEFAULT
+    sq = [dict(element=i, position="MID", team=1, price=100) for i in range(15)]
+    errs = rules.validate(r, sq, list(range(11)), list(range(11, 15)), 0, 0)
+    joined = " ".join(errs)
+    assert "needs 2 GKP" in joined and "max 3" in joined and "budget" in joined and "captain" in joined
+
+
+def test_chip_rules():
+    projs, team_of = pool()
+    plan = squad.pick_squad(projs, GWS, rules.DEFAULT, team_of)
+    d = chips.decide(plan, {"bboost", "3xc", "freehit", "wildcard"}, first_gameweek=True)
+    bench_total = sum(p.xp_by_gw[9] for p in plan.bench)
+    assert (d.chip == "bboost") == (bench_total >= chips.BENCH_BOOST_THRESHOLD)
+    assert any("Free Hit: not allowed" in line for line in d.lines)
+    for p in plan.bench:
+        p.xp_by_gw[9] = 0.5
+    d2 = chips.decide(plan, {"bboost", "3xc"}, first_gameweek=True)
+    assert d2.chip == "3xc"  # captain's week equals the best later week, so Triple Captain qualifies

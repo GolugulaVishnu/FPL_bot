@@ -1,6 +1,6 @@
 # FPL bot system flow
 
-Master reference for the bot's design. Approved 2026-10-30 (v0.3 of the reviewed flowchart). Rules come from `docs/fpl-rules-context.md`; where this file and the rules file disagree, the rules file wins.
+Master reference for the bot's design. Approved 2026-10-30 (v0.3 of the reviewed flowchart); updated 2026-10-30 at the owner's request: no dry run, the bot plays from GW9, and data comes from the FPL API plus a public archive instead of Understat/FBref. Rules come from `docs/fpl-rules-context.md`; where this file and the rules file disagree, the rules file wins.
 
 Summary: fully autonomous (no human veto) · Windows primary, macOS backup · Python + SQLite · free data only · decision cards as .txt files in this repo · ntfy push alerts · goal: maximise points and overall rank.
 
@@ -10,7 +10,7 @@ The bot is a short program that the operating system starts every 15 minutes. Ea
 
 ```mermaid
 flowchart TD
-  S1["1 One-time setup, dry run, go-live, account creation"] --> T2["2 Scheduler tick every 15 min"]
+  S1["1 One-time setup, smoke test, go-live from GW9"] --> T2["2 Scheduler tick every 15 min"]
   T2 --> KS{"Kill switch on?"}
   KS -- yes --> PZ["Pause: log, ntfy once, exit"]
   KS -- no --> DUE{"What is due now?"}
@@ -34,27 +34,29 @@ flowchart TD
 
 ## 1. Setup and go-live
 
-You created the FPL account for `soohzabimaru864@gmail.com` yourself on 2026-10-30, so the bot only ever logs in. Pick no squad until go-live: the bot picks the first squad inside the unlimited-transfer window before the team's first deadline.
+You created the FPL account for `soohzabimaru864@gmail.com` yourself on 2026-10-30, so the bot only ever logs in. There is no dry run: the bot plays from GW9 (deadline Sat 31 Oct 2026, 11:00 UTC). The go-live check is a smoke test that the whole workflow produces a valid team and decision card.
+
+Automated login and submission can't be built and safely tested before the GW9 deadline, so GW9 is entered by you, by hand, exactly as the bot's decision card says. From GW10 the bot submits itself, after a check-only login run (log in and read the team, change nothing) proves the login works.
 
 ```mermaid
 flowchart TD
   A["Install Python, bot and SQLite on Windows and macOS"] --> B["You: create a GitHub token for this repo (write cards)"]
   B --> C["You: install ntfy on phone, subscribe to the private topics the bot prints"]
   C --> D["You run the setup command on each machine: it asks for the FPL password and GitHub token, hidden, and saves them to the OS keychain"]
-  D --> E["Backfill data: FPL history, fixtures, free xG and xA from Understat and FBref"]
-  E --> F["Train expected-points model"]
-  F --> G["Backtest on past seasons, report accuracy"]
-  G --> H["Dry run: 2 gameweeks, plan only, cards pushed, no FPL writes"]
-  H --> I{"You approve go-live?"}
-  I -- no --> J["Fix code or model"] --> H
-  I -- yes --> K["Bot reads the FPL password from the keychain"]
-  K --> P["First login: PingOne OAuth with PKCE, tokens to keychain, record team ID"]
+  D --> E["Load data: past seasons from the public FPL archive, this season from the FPL API (Opta xG and xA included)"]
+  E --> F["Build expected-points model"]
+  F --> G["Backtest on 2025-26, report accuracy"]
+  G --> H["Smoke test: fplbot pick builds a valid GW9 team and decision card"]
+  H --> V{"Team passes squad and lineup rules?"}
+  V -- no --> J["Fix code or model"] --> H
+  V -- yes --> Q["GW9: pick initial 15 with unlimited transfers before the team's first deadline"]
+  Q --> R["GW9 final card pushed to repo; you enter the team by hand before the deadline"]
+  R --> K["Before GW10: check-only login run with the password from the keychain"]
+  K --> P["Login: PingOne OAuth with PKCE, tokens to keychain, record team ID, read team"]
   P --> M{"CAPTCHA or human check?"}
-  M -- yes --> N["Pause, ntfy you to finish that one step by hand"] --> Q
-  M -- no --> Q
-  Q["Pick initial 15 with unlimited transfers before first deadline"]
-  Q --> R["Initial decision card pushed to repo, then submit squad, XI, captain"]
-  R --> S["Live mode: scheduler enabled on both machines"]
+  M -- yes --> N["Pause, ntfy you to finish that one step by hand"] --> S
+  M -- no --> S
+  S["Live mode from GW10: bot submits itself, scheduler enabled on both machines"]
 ```
 
 ### Needed from you
@@ -105,7 +107,7 @@ Runs once a day after the 00:00 UTC price update. This is where an early commit 
 ```mermaid
 flowchart TD
   A["After 00:00 UTC price update"] --> B["Fetch FPL bootstrap-static and fixtures, cached"]
-  B --> C["Fetch free xG and xA: Understat, FBref, slow rate"]
+  B --> C["Fetch newly finished gameweeks from the FPL API, incl. Opta xG and xA"]
   C --> D["Read player news, status, chance of playing"]
   D --> E["Update SQLite"]
   E --> F["Re-project expected points for squad and shortlist"]
@@ -304,7 +306,7 @@ flowchart TD
 
 These were the review items on the flowchart, approved as written.
 
-1. The dry run makes no FPL writes; no squad is picked until go-live.
+1. No dry run (changed 2026-10-30): the bot plays from GW9. GW9 is entered by hand from the decision card; automated submission starts at GW10 after a check-only login run.
 2. The FPL account was created by the owner on 2026-10-30; the bot logs in and never signs up.
 3. Secrets are stored in the Windows Credential Manager and macOS Keychain.
 4. Card file layout under `decision-cards/`, `reviews/` and `rules-alerts/`, and that a failed git push never blocks FPL moves.
@@ -313,6 +315,7 @@ These were the review items on the flowchart, approved as written.
 7. The thresholds in section 5: 2 gameweeks as a short absence, Wildcard at 15+ points over the horizon, Free Hit at 10+ points in the week, and the Triple Captain and Bench Boost fallbacks.
 8. The bot adopts recalibrated model weights only when they beat the current model on backtest. Code changes stay with you.
 9. The repo is private (since 2026-10-30), so decision cards are not published. Keep it private.
+10. Data sources (changed 2026-10-30): the FPL API (which carries Opta xG and xA per player per match) and the public vaastav/Fantasy-Premier-League archive (MIT licence) for past seasons. Understat and FBref are not used.
 
 ## Schedule
 

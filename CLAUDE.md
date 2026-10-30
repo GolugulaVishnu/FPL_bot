@@ -2,7 +2,7 @@
 
 ## Rules knowledge base
 
-`docs/fpl-rules-context.md` is the authoritative FPL rules reference for this project (2026/27 season, v2.4, verified 2026-10-29 at GW9). Read the relevant part before writing or changing any logic that touches squads, transfers, prices, chips, deadlines, scoring, leagues or cups.
+`docs/fpl-rules-context.md` is the authoritative FPL rules reference for this project (2026/27 season, v2.5, verified 2026-10-29 at GW9). Read the relevant part before writing or changing any logic that touches squads, transfers, prices, chips, deadlines, scoring, leagues or cups.
 
 - Part A: official rules. The only part to treat as fact.
 - Part B: undocumented mechanics, each tagged `[OFFICIAL-API]`, `[OFFICIAL-NEWS]`, `[COMMUNITY]` or `[SPECULATIVE]`. Rely without a fallback only on the two `OFFICIAL` tags.

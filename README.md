@@ -2,7 +2,7 @@
 
 An autonomous Fantasy Premier League bot that runs on your own machines. Design: `docs/system-flow.md`. Rules: `docs/fpl-rules-context.md`.
 
-**Status:** setup, data capture, the 15-minute scheduled run, the data store and the expected-points model (with backtest) are built. Transfer planning, submitting and reviews are still to come, so the scheduler is not switched on yet.
+**Status:** setup, data capture, the 15-minute scheduled run, the data store, the expected-points model (with backtest), the squad optimiser and decision cards are built. The bot plays from GW9: it picks the team and writes the decision card, and GW9 is entered on the FPL site by hand. Automated login and submission come next (from GW10), so the scheduler is not switched on yet.
 
 ## First-time setup on Windows
 
@@ -72,6 +72,14 @@ fplbot backtest --season 2025-26
 - `fplbot project` prints expected points for the next 6 gameweeks. Add `--position MID` to filter, or `--horizon 3` for fewer weeks.
 - `fplbot backtest` replays a past season week by week and compares the model with recent form and with FPL's own projection. Add `--save` to write the report to `reports/`.
 
+## Picking this gameweek's team
+
+```powershell
+fplbot pick --push
+```
+
+Builds the best squad, starting XI, bench order, captain, vice-captain and chip decision for the next gameweek from live FPL data, checks it against the squad rules, and writes the decision card to `decision-cards/<season>/gwNN-final.txt` (`--push` commits and pushes it). Run it close to the deadline so it sees the latest team news and overnight price changes. Use `--kind draft` for an earlier look.
+
 ## Everyday commands
 
 | Command | What it does |
@@ -79,7 +87,7 @@ fplbot backtest --season 2025-26
 | `fplbot status` | Shows what is set up and the last runs |
 | `fplbot pause` / `fplbot resume` | Pauses or resumes the bot on this machine. To pause both machines from your phone, send `pause` or `resume` to the control topic in ntfy |
 | `fplbot setup --reset` | Re-enter the FPL password or GitHub token (for example after changing them) |
-| `fplbot schedule install` / `remove` | Switch the 15-minute run on or off (not yet: this comes with the dry run) |
+| `fplbot schedule install` / `remove` | Switch the 15-minute run on or off (not yet: this comes with automated submission) |
 
 ## Where things live
 
