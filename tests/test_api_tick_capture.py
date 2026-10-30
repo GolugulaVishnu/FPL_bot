@@ -90,8 +90,11 @@ def test_primary_tick_heartbeats_and_runs_due_jobs():
     assert "daily: FPL data refreshed" in result and "plan: not built yet" in result
     assert any("heartbeat" in t for t, _, _ in ntfy.sent)
     st = store.get_state()
-    assert st["daily_done_date"] == "2026-10-30" and st["plan_done_event"] == 9 and st["post_gw_done_event"] == 8
-    assert tick.run(_cfg("primary"), now=now, ntfy=ntfy, client=c, store=store) == "nothing due"
+    assert st["daily_done_date"] == "2026-10-30"
+    # Placeholder jobs stay due, so the real job handles that gameweek once it is built.
+    assert "plan_done_event" not in st and "post_gw_done_event" not in st
+    again = tick.run(_cfg("primary"), now=now, ntfy=ntfy, client=c, store=store)
+    assert "daily" not in again and "plan: not built yet" in again
 
 
 def test_backup_stands_by_while_primary_alive_or_unreadable():
