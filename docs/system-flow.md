@@ -34,26 +34,25 @@ flowchart TD
 
 ## 1. Setup and go-live
 
-The dry run happens before the FPL account exists. A team that exists but doesn't submit for two weeks would roll over and lose points, so the account is created only at go-live, inside the unlimited-transfer window before its first deadline.
+You created the FPL account for `soohzabimaru864@gmail.com` yourself on 2026-10-30, so the bot only ever logs in. Pick no squad until go-live: the bot picks the first squad inside the unlimited-transfer window before the team's first deadline.
 
 ```mermaid
 flowchart TD
-  A["Install Python, bot and SQLite on Windows and macOS"] --> B["You: Gmail app password for soohzabimaru864 (read verification email) + GitHub token for this repo (write cards)"]
+  A["Install Python, bot and SQLite on Windows and macOS"] --> B["You: create a GitHub token for this repo (write cards)"]
   B --> C["You: install ntfy on phone, subscribe to the private topics the bot prints"]
-  C --> D["Store secrets in OS keychain: Windows Credential Manager / macOS Keychain"]
+  C --> D["You run the setup command on each machine: it asks for the FPL password and GitHub token, hidden, and saves them to the OS keychain"]
   D --> E["Backfill data: FPL history, fixtures, free xG and xA from Understat and FBref"]
   E --> F["Train expected-points model"]
   F --> G["Backtest on past seasons, report accuracy"]
-  G --> H["Dry run: 2 gameweeks, plan only, cards sent, no account, no submits"]
+  G --> H["Dry run: 2 gameweeks, plan only, cards pushed, no FPL writes"]
   H --> I{"You approve go-live?"}
   I -- no --> J["Fix code or model"] --> H
-  I -- yes --> K["Bot reads the FPL password you entered into the keychain at setup"]
-  K --> L["Bot opens FPL signup with soohzabimaru864 at gmail.com, fills bot-chosen details and team name"]
-  L --> M{"CAPTCHA or human check?"}
-  M -- yes --> N["Pause, ntfy you to finish that one step by hand"] --> O
-  M -- no --> O["Bot reads verification email over IMAP, opens link"]
-  O --> P["First login: PingOne OAuth with PKCE, tokens to keychain, record team ID"]
-  P --> Q["Pick initial 15 with unlimited transfers before first deadline"]
+  I -- yes --> K["Bot reads the FPL password from the keychain"]
+  K --> P["First login: PingOne OAuth with PKCE, tokens to keychain, record team ID"]
+  P --> M{"CAPTCHA or human check?"}
+  M -- yes --> N["Pause, ntfy you to finish that one step by hand"] --> Q
+  M -- no --> Q
+  Q["Pick initial 15 with unlimited transfers before first deadline"]
   Q --> R["Initial decision card pushed to repo, then submit squad, XI, captain"]
   R --> S["Live mode: scheduler enabled on both machines"]
 ```
@@ -61,7 +60,7 @@ flowchart TD
 ### Needed from you
 
 - A GitHub fine-grained token limited to this one repo with Contents read and write, so the bot can push decision cards. Stored in the keychain, never in the repo.
-- Gmail app password for `soohzabimaru864` so the bot can read the FPL verification email. Google requires 2-Step Verification on that account to create one.
+- Run the bot's setup command once on each machine (Windows and Mac). It asks for the FPL password with hidden typing and saves it to the OS keychain; nothing is written to the repo. Under the hood this is the same as `python -m keyring set fpl-bot soohzabimaru864@gmail.com`.
 - ntfy: install the free ntfy app (iOS or Android) and subscribe to two topic names the bot generates at setup: one for alerts, one for pause/resume commands. Topic names are long random strings, because anyone who knows a topic name can read it.
 
 ### Notes
@@ -305,8 +304,8 @@ flowchart TD
 
 These were the review items on the flowchart, approved as written.
 
-1. The dry run happens before the account exists, so no gameweeks are lost to a rolled-over team.
-2. The verification email is read by the bot over IMAP with an app password for `soohzabimaru864`.
+1. The dry run makes no FPL writes; no squad is picked until go-live.
+2. The FPL account was created by the owner on 2026-10-30; the bot logs in and never signs up.
 3. Secrets are stored in the Windows Credential Manager and macOS Keychain.
 4. Card file layout under `decision-cards/`, `reviews/` and `rules-alerts/`, and that a failed git push never blocks FPL moves.
 5. Failover: a 15-minute tick, and the Mac takes over after 30 minutes without a Windows heartbeat, sent over ntfy.

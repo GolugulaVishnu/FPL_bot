@@ -2,7 +2,7 @@
 
 ```yaml
 title: Fantasy Premier League rules knowledge base (Classic game, Classic and H2H leagues, cups)
-version: v2.1
+version: v2.2
 rules_baseline: "2026/27 season, verified 2026-10-29 at GW9 (GW8 finished; GW9 deadline 2026-10-31T11:00Z)"
 authoritative_sources:
   - Official rules page, rendered in a browser 2026-10-29: https://fantasy.premierleague.com/help/rules
@@ -411,9 +411,9 @@ Tags: `[OFFICIAL-API]` = observed in live API data or config. `[OFFICIAL-NEWS]` 
 
 **Mode: autonomous.** The account owner has decided the bot runs the team by itself. Each gameweek it logs in, computes transfers, XI, bench order, captain, vice-captain and chip decision, and makes and confirms every move itself before the deadline. It writes each decision and action, with its reasoning, to a decision card for the owner to review. There is no human veto: the owner's role is to review cards and change the code to fix biases and wrong assumptions. The full run sequence is in `docs/system-flow.md`.
 
-- The owner has no FPL account. The bot creates one at go-live (after a 2-gameweek dry run with no account), registered to `soohzabimaru864@gmail.com`, and reads the verification email over IMAP. If signup shows a CAPTCHA or other human check, the bot stops and asks the owner to complete that step; it never works around it.
+- The owner created the FPL account for `soohzabimaru864@gmail.com` on 2026-10-30. The bot only logs in; it never registers accounts. If login shows a CAPTCHA or other human check, the bot stops and asks the owner to complete that step; it never works around it. No squad is picked until go-live, after a 2-gameweek dry run.
 - The bot runs on the owner's own machines: Windows primary, macOS backup. It never logs in from cloud servers.
-- The bot may store the owner's password, session and tokens. The owner enters the FPL password into the OS keychain (Windows Credential Manager, macOS Keychain) at setup. Secrets stay out of the repository (OS keychain, environment variables or a git-ignored secrets file) and never expose credentials or API keys in logs, decision cards or calls to anything other than the FPL login and Game endpoints.
+- The bot may store the owner's password, session and tokens. The owner enters the FPL password once per machine through the bot's setup command, which saves it to the OS keychain (Windows Credential Manager, macOS Keychain). Secrets stay out of the repository (OS keychain, environment variables or a git-ignored secrets file) and never expose credentials or API keys in logs, decision cards or calls to anything other than the FPL login and Game endpoints.
 - Login runs through PingOne OAuth 2.0 / OIDC with PKCE at account.premierleague.com (B9).
 - Decision cards, gameweek reviews and rules-change reports are `.txt` files the bot commits and pushes to this repo (`decision-cards/`, `reviews/`, `rules-alerts/`). Alerts go by ntfy push notification. While the repo is public, cards republish Game data (Cl.29); make the repo private before go-live.
 
@@ -734,6 +734,7 @@ news_keywords: [changes, new, chip, "free transfer", rules, "Second Chance", Cup
 
 | Version | Date | Change |
 |---|---|---|
+| v2.2 | 2026-10-30 | Owner created the FPL account; the bot logs in only and never signs up. Password entry via the setup command into the OS keychain. |
 | v2.1 | 2026-10-30 | C1 updated with the owner's setup decisions: account created by the bot at go-live for soohzabimaru864@gmail.com, runs on the owner's Windows machine with macOS backup, password in the OS keychain, no human veto, decision cards as .txt files in the repo, ntfy alerts. Points to `docs/system-flow.md`. |
 | v2.0 | 2026-10-29 | Operating mode changed by the account owner from human-confirmed decision support to autonomous: the bot logs in and makes moves itself. Rewrote C1, C4, C6, C7, B9, D2 and E6 to match. A17 terms excerpts left verbatim, with a note that the owner accepts the risk. |
 | v1.0 | 2026-10-29 | First version. Rules baseline for 2026/27 verified at GW9 against the rendered rules page, the rendered terms and live `bootstrap-static`. Corrected the first-half chip deadline to Fri 1 Jan 2027 18:30 UTC (earlier secondary sources said Sat 2 Jan 13:30). Terms excerpts now verbatim-verified. Full official BPS table added. Second Chance League start left flagged as conflicting. Price updates recorded as 00:00 UTC per the API. |
