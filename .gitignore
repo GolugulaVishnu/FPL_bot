@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+
+# Secrets never live in the repo (they go in the OS keychain).
+.env
+*.secret
+secrets*.json
