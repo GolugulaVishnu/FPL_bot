@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+record = ["playwright>=1.45"]  # fplbot record: drives a real browser window
 
 [project.scripts]
 fplbot = "fplbot.cli:main"

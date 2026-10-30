@@ -326,6 +326,47 @@ def cmd_pick(args) -> int:
     return 0
 
 
+def cmd_record(args) -> int:
+    """Open a browser, let the owner log in and save the team, and record the site's requests without secrets."""
+    try:
+        from .record import recorder
+    except ImportError:
+        print('The browser recorder is not installed. Run:  pip install -e ".[record]"  then  python -m playwright install chromium')
+        return 2
+    cfg = config_mod.load()
+    secrets = [cfg.fpl_email]
+    for getter in (lambda: secret_store.fpl_password(cfg.fpl_email), secret_store.github_token):
+        try:
+            secrets.append(getter())
+        except secret_store.MissingSecret:
+            pass
+    print("A browser window will open on the FPL site. In it:")
+    print("  1. Log in with the FPL account.")
+    print("  2. Enter the team exactly as the latest decision card says, and save it.")
+    print("  3. Wait a few seconds after saving, then close the browser window.")
+    print("Nothing from the browser (cookies, tokens) is kept. Only a cleaned record of the site's requests is saved.\n")
+    try:
+        rec = recorder.run()
+    except Exception as e:
+        print(f"The browser could not start: {e}\nIf Chromium is missing, run:  python -m playwright install chromium")
+        return 1
+    try:
+        out = recorder.save(rec, paths.REPO_ROOT / "recordings", secrets)
+    except recorder.LeakError as e:
+        print(f"{e}. Nothing was written; send the message above to Claude.")
+        return 1
+    print(f"Saved {out.relative_to(paths.REPO_ROOT)} ({len(rec.entries)} requests).")
+    if args.push:
+        try:
+            gitops.commit_and_push(paths.REPO_ROOT, [out], "Add cleaned FPL session recording",
+                                   secret_store.github_token())
+            print("Committed and pushed.")
+        except (gitops.GitError, secret_store.MissingSecret) as e:
+            print(f"Saved locally but not pushed: {e}")
+            return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="fplbot")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -378,6 +419,10 @@ def main(argv: list[str] | None = None) -> int:
     pk.add_argument("--snapshot", help="use a samples/ folder instead of the live API ('latest' for the newest)")
     pk.add_argument("--at", help="pretend it is this UTC time (testing)")
     pk.set_defaults(func=cmd_pick)
+
+    rc = sub.add_parser("record", help="log in and save the team in a browser while the bot records how the site does it")
+    rc.add_argument("--push", action="store_true", help="commit and push the cleaned recording")
+    rc.set_defaults(func=cmd_record)
 
     args = p.parse_args(argv)
     logs.setup()

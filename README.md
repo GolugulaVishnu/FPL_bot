@@ -80,6 +80,23 @@ fplbot pick --push
 
 Builds the best squad, starting XI, bench order, captain, vice-captain and chip decision for the next gameweek from live FPL data, checks it against the squad rules, and writes the decision card to `decision-cards/<season>/gwNN-final.txt` (`--push` commits and pushes it). Run it close to the deadline so it sees the latest team news and overnight price changes. Use `--kind draft` for an earlier look.
 
+## Recording how the FPL site saves a team
+
+Needed once, so the bot can learn to submit by itself. Install the browser recorder (once):
+
+```powershell
+pip install -e ".[record]"
+python -m playwright install chromium
+```
+
+Then, when you enter a team by hand:
+
+```powershell
+fplbot record --push
+```
+
+A browser window opens on the FPL site. Log in, enter and save the team from the decision card, wait a few seconds, then close the window. The bot saves a cleaned record of the site's requests to `recordings/`: request addresses and data layout, player ids, captain flags and chip names. Passwords, cookies, login tokens and your email are removed, and the file is checked again for leaks before it is written. The browser profile is temporary, so nothing from the login is kept.
+
 ## Everyday commands
 
 | Command | What it does |
