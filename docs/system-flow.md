@@ -1,0 +1,330 @@
+# FPL bot system flow
+
+Master reference for the bot's design. Approved 2026-10-30 (v0.3 of the reviewed flowchart). Rules come from `docs/fpl-rules-context.md`; where this file and the rules file disagree, the rules file wins.
+
+Summary: fully autonomous (no human veto) · Windows primary, macOS backup · Python + SQLite · free data only · decision cards as .txt files in this repo · ntfy push alerts · goal: maximise points and overall rank.
+
+## 0. Overview
+
+The bot is a short program that the operating system starts every 15 minutes. Each run checks what is due against the live FPL deadlines and does only that job, then exits. Moves can be committed at any point in the week, but every commit is preceded by a decision card, saved as a text file in the GitHub repo.
+
+```mermaid
+flowchart TD
+  S1["1 One-time setup, dry run, go-live, account creation"] --> T2["2 Scheduler tick every 15 min"]
+  T2 --> KS{"Kill switch on?"}
+  KS -- yes --> PZ["Pause: log, ntfy once, exit"]
+  KS -- no --> DUE{"What is due now?"}
+  DUE -- "once a day" --> D3["3 Daily refresh: data, prices, news"]
+  DUE -- "deadline minus 24h" --> P4["4 Weekly plan + draft decision card"]
+  DUE -- "deadline minus 2h" --> F6["6 Final run, final card, submit"]
+  DUE -- "points final, 09:00 UK day after last match" --> R7["7 Post-gameweek review + retrain"]
+  DUE -- "Tue 09:00 UK or news hit" --> C8["8 Rules-change check"]
+  DUE -- "nothing" --> EX["Exit"]
+  D3 -- "early-commit trigger" --> F6
+  P4 --> RU5["5 Hit, injury and chip rules"]
+  RU5 --> P4
+  F6 --> RU5
+  D3 -.-> E9["9 Failure handling"]
+  P4 -.-> E9
+  F6 -.-> E9
+  R7 -.-> E9
+  C8 -.-> E9
+  R7 -- "model updated" --> D3
+```
+
+## 1. Setup and go-live
+
+The dry run happens before the FPL account exists. A team that exists but doesn't submit for two weeks would roll over and lose points, so the account is created only at go-live, inside the unlimited-transfer window before its first deadline.
+
+```mermaid
+flowchart TD
+  A["Install Python, bot and SQLite on Windows and macOS"] --> B["You: Gmail app password for soohzabimaru864 (read verification email) + GitHub token for this repo (write cards)"]
+  B --> C["You: install ntfy on phone, subscribe to the private topics the bot prints"]
+  C --> D["Store secrets in OS keychain: Windows Credential Manager / macOS Keychain"]
+  D --> E["Backfill data: FPL history, fixtures, free xG and xA from Understat and FBref"]
+  E --> F["Train expected-points model"]
+  F --> G["Backtest on past seasons, report accuracy"]
+  G --> H["Dry run: 2 gameweeks, plan only, cards sent, no account, no submits"]
+  H --> I{"You approve go-live?"}
+  I -- no --> J["Fix code or model"] --> H
+  I -- yes --> K["Bot reads the FPL password you entered into the keychain at setup"]
+  K --> L["Bot opens FPL signup with soohzabimaru864 at gmail.com, fills bot-chosen details and team name"]
+  L --> M{"CAPTCHA or human check?"}
+  M -- yes --> N["Pause, ntfy you to finish that one step by hand"] --> O
+  M -- no --> O["Bot reads verification email over IMAP, opens link"]
+  O --> P["First login: PingOne OAuth with PKCE, tokens to keychain, record team ID"]
+  P --> Q["Pick initial 15 with unlimited transfers before first deadline"]
+  Q --> R["Initial decision card pushed to repo, then submit squad, XI, captain"]
+  R --> S["Live mode: scheduler enabled on both machines"]
+```
+
+### Needed from you
+
+- A GitHub fine-grained token limited to this one repo with Contents read and write, so the bot can push decision cards. Stored in the keychain, never in the repo.
+- Gmail app password for `soohzabimaru864` so the bot can read the FPL verification email. Google requires 2-Step Verification on that account to create one.
+- ntfy: install the free ntfy app (iOS or Android) and subscribe to two topic names the bot generates at setup: one for alerts, one for pause/resume commands. Topic names are long random strings, because anyone who knows a topic name can read it.
+
+### Notes
+
+- Secrets go in the OS keychain, which is a git-ignored store outside the repo, in line with CLAUDE.md.
+- A CAPTCHA or other human check is never bypassed. The bot stops and asks you.
+- The bot logs in from your home network only. FPL blocks cloud servers.
+
+## 2. Scheduler and failover
+
+Task Scheduler (Windows) and launchd (macOS) each start a run every 15 minutes. A short scheduled run survives reboots and crashes better than a long-running process. The Mac stays idle unless the Windows machine has gone quiet.
+
+```mermaid
+flowchart TD
+  T["OS scheduler starts a run every 15 min"] --> W{"Which machine?"}
+  W -- Windows --> HB["Post heartbeat to private ntfy topic"] --> LK
+  W -- macOS --> CK{"Windows heartbeat in last 30 min?"}
+  CK -- yes --> SB["Standby, exit"]
+  CK -- no --> TO["ntfy: Windows silent, macOS taking over"] --> LK
+  LK["Take local run lock"] --> KS{"Kill switch? flag file or pause message on ntfy control topic"}
+  KS -- on --> PZ["Log, ntfy once, exit"]
+  KS -- off --> CD["Load cached deadlines; re-read from FPL API if cache older than 6h"]
+  CD --> DJ["Pick due jobs: daily, plan, final, post-GW, rules check"]
+  DJ --> RJ["Run jobs in order, write log to SQLite"]
+  RJ --> UL["Release lock, exit"]
+```
+
+### Why a double submit can't happen
+
+- Before any write, the bot reads the current team from FPL and applies only the difference from its plan. If Windows already submitted, the Mac finds nothing to change.
+- The heartbeat check means the Mac only acts when Windows has been silent for 30 minutes.
+
+### Notes
+
+- The heartbeat goes over ntfy. It's free and needs no shared drive.
+- 15-minute tick and 30-minute failover window.
+
+## 3. Daily refresh
+
+Runs once a day after the 00:00 UTC price update. This is where an early commit can start: the bot may submit days before the deadline when waiting would cost money.
+
+```mermaid
+flowchart TD
+  A["After 00:00 UTC price update"] --> B["Fetch FPL bootstrap-static and fixtures, cached"]
+  B --> C["Fetch free xG and xA: Understat, FBref, slow rate"]
+  C --> D["Read player news, status, chance of playing"]
+  D --> E["Update SQLite"]
+  E --> F["Re-project expected points for squad and shortlist"]
+  F --> G{"Squad player newly injured, suspended or doubtful?"}
+  G -- yes --> H["Mini re-plan using injury rules, section 5"]
+  G -- no --> I
+  H --> I{"Locked-in target near-certain to rise, or a player we are selling near-certain to fall, before next update?"}
+  I -- yes --> J["Early commit: go to section 6 with reason: price"]
+  I -- no --> K["Log, exit"]
+```
+
+### Notes
+
+- Price signal: `price_change_percent` and `price_change_projections`, ignored while `price_change_calibrating` is true.
+- A locked-in target is a player who appears in the plan's transfers in every one of the last 2 plan runs.
+- Near-certain means a projected change at the next update with predictor progress of 100% or more.
+
+## 4. Weekly plan (deadline minus 24h)
+
+The full weekly plan, sent as a draft decision card. Nothing is submitted at this stage unless an early-commit trigger fires.
+
+```mermaid
+flowchart TD
+  A["Refresh all data"] --> B["Read team state from FPL: squad, selling prices, bank, free transfers, chips left"]
+  B --> C["Choose horizon: adaptive 3 to 6 gameweeks"]
+  C --> D["Project expected points per player per gameweek: minutes, xG, xA, form, fixture difficulty, clean-sheet odds, bonus via BPS"]
+  D --> E["Compare with free public projections, log disagreements"]
+  E --> F["Optimiser over horizon: transfers, hits, bank, rolled free transfers"]
+  F --> G["Apply hit, injury and chip rules, section 5"]
+  G --> H["Pick XI, bench order, captain, vice-captain"]
+  H --> V{"Passes validation?"}
+  V -- no --> F
+  V -- yes --> K["Draft card: commit gwNN-draft.txt to decision-cards, push, ntfy summary"]
+```
+
+### Validation checks
+
+- 15 players, 2/5/5/3, max 3 per club, budget computed from selling prices in tenths.
+- Valid formation, reserve goalkeeper in bench slot 12.
+- At most 20 transfers unless Wildcard or Free Hit is played; one chip per gameweek; no Free Hits in consecutive gameweeks.
+- First-half chips used by the GW19 deadline, 1 Jan 2027 18:30 UTC.
+
+### Where cards go
+
+- `decision-cards/2026-27/gw10-draft.txt`, `gw10-final.txt`, plus `reviews/2026-27/gw10-review.txt` and `rules-alerts/`. The bot commits and pushes each one; ntfy carries a short summary and the file path.
+
+### What a decision card contains
+
+- Every move: transfers, hits, chip, XI, bench order, captain and vice-captain.
+- For each move: the expected-points numbers behind it, the alternatives it beat and by how much, the assumptions it relies on (minutes, fixtures, injuries), and where the bot's projection differs from public projections.
+- Confidence for each assumption, so you can see which ones to penalise in code if they turn out wrong.
+
+## 5. Hit, injury and chip rules
+
+Your rules as the bot applies them. The Triple Captain, Wildcard and Free Hit triggers are my proposals.
+
+```mermaid
+flowchart TD
+  subgraph INJ["Injured or unavailable starter"]
+    I1["Estimate gameweeks out from news and status"] --> I2{"Can a bench player cover without hurting the XI much?"}
+    I2 -- yes --> I3{"Out only a short time?"}
+    I3 -- yes --> I4["Bench the player, keep him"]
+    I3 -- no --> I5["Treat as transfer candidate"]
+    I2 -- no --> I5
+  end
+  subgraph HIT["Transfer and hit decision"]
+    H1{"Free transfer available?"} -- yes --> H2["Use it on the best gain over the horizon"]
+    H1 -- no --> H3{"Incoming player expected points over horizon minus outgoing player's above 4?"}
+    H3 -- yes --> H4["Take the -4 hit"]
+    H3 -- no --> H5["No transfer, roll the free transfer"]
+  end
+  subgraph CHIP["Chips, one per gameweek"]
+    C1{"Bench four projected total at least 14.5?"} -- yes --> C2["Bench Boost"]
+    C1 -- no --> C3{"Best captain is the top triple-captain week left in this chip window?"}
+    C3 -- yes --> C4["Triple Captain"]
+    C3 -- no --> C5{"Wildcard squad beats normal plan by a clear margin over horizon?"}
+    C5 -- yes --> C6["Wildcard"]
+    C5 -- no --> C7{"Blank or double gameweek where Free Hit gains a lot for one week?"}
+    C7 -- yes --> C8["Free Hit"]
+    C7 -- no --> C9["No chip"]
+  end
+  I5 --> H1
+```
+
+### Your rules
+
+- Hit: only if the incoming player's expected points over the horizon beat the outgoing player's by more than 4.
+- Late injury with no free transfers left: try the bench first, judged on expected time out.
+- Bench Boost: when the four bench players' projected total for the gameweek is 14.5 or more.
+- Triple Captain inputs: projected points, fixture difficulty, head-to-head history, form, xG, xA.
+
+### My proposals
+
+- If no Bench Boost week in the chip window reaches 14.5, use it in the highest week left before the window closes.
+- Short time out means 2 gameweeks or fewer.
+- Triple Captain when this week's best captain score is the highest projected for the rest of the chip window.
+- Wildcard when the unlimited-transfer squad beats the normal plan by 15 or more expected points over the horizon.
+- Free Hit for blank or double gameweeks when it gains 10 or more expected points for that week.
+- Order of checks when two chips qualify: Bench Boost, Triple Captain, Wildcard, Free Hit.
+
+## 6. Final run and submit
+
+Runs at deadline minus 2h, or earlier on an early-commit trigger. Moves are saved by deadline minus 90 minutes, then read back to confirm.
+
+```mermaid
+flowchart TD
+  A["Start: deadline minus 2h, or early-commit trigger"] --> B["Refresh team news, prices, flags"]
+  B --> C["Log in or refresh token"]
+  C --> D["Read current team from FPL"]
+  D --> E["Re-plan with sections 4 and 5"]
+  E --> F["Final card: commit gwNN-final.txt, push, ntfy, before any FPL write"]
+  F --> G["Diff plan against current team"]
+  G --> H{"Anything to change?"}
+  H -- no --> Z["ntfy: no changes needed, exit"]
+  H -- yes --> I["Submit transfers, with chip if any"]
+  I --> J["Submit XI, bench order, captain, vice-captain"]
+  J --> K["Read team back from FPL"]
+  K --> L{"Matches plan?"}
+  L -- yes --> M["Append confirmed result to card, push, ntfy"]
+  L -- no --> N["Section 9: retry up to 3 times"]
+  N --> K
+```
+
+### Notes
+
+- Late changes: if an early commit already happened, the final run still re-plans and can change the XI, captain and free transfers left.
+- Wildcard and Free Hit can't be undone once played, so they are submitted only from the final run, never on an early commit.
+- No human veto. The card explains the decision; it does not wait for a reply.
+
+## 7. Post-gameweek review
+
+Runs once points are final, at 09:00 UK on the day after the last match, and the gameweek is marked data-checked.
+
+```mermaid
+flowchart TD
+  A["Points final and gameweek data-checked"] --> B["Fetch actual points, minutes, bonus, auto-subs"]
+  B --> C["Compare predicted and actual: each player, captain, transfers, hits, chip"]
+  C --> D["Compare own projections with public projections: who was closer"]
+  D --> E["Bias report: assumptions that were wrong, by how much, how often"]
+  E --> F["Recalibrate model weights on new data"]
+  F --> G{"Recalibrated model beats current one on backtest?"}
+  G -- yes --> H["Adopt new weights"]
+  G -- no --> I["Keep current weights, log why"]
+  H --> J["Commit gwNN-review.txt to reviews, push, ntfy: points, rank, accuracy, biases"]
+  I --> J
+```
+
+### Your part
+
+- Read the review and decision cards, then change the code to fix biases and penalise wrong assumptions. The bot only tunes model weights itself; code changes are yours.
+
+## 8. Rules-change check
+
+Part D of the rules file. Weekly on Tuesday 09:00 UK, plus a daily news scan.
+
+```mermaid
+flowchart TD
+  A["Tuesday 09:00 UK, pre-season dates, or news-scan hit"] --> B["Fetch bootstrap-static, Overall league 314, rules, terms, FAQ, prizes pages"]
+  B --> C["Diff against the YAML baseline in D6"]
+  C --> D{"Change class?"}
+  D -- none --> E["Log: verified this week"]
+  D -- DATA --> F["Propose table update, minor version bump"]
+  D -- RULE --> G["Hold moves that depend on the changed rule"]
+  G --> H["Commit change report txt, push, ntfy: old and new values, affected logic"]
+  D -- REVIEW --> H
+  F --> H
+  H --> I["You approve rules-file update"]
+  I --> J["Release held logic"]
+```
+
+## 9. Failure handling
+
+Applies to every stage. The safe default is to make no moves: FPL keeps the previous team.
+
+```mermaid
+flowchart TD
+  A["Any step fails"] --> B["Retry up to 3 times with backoff"]
+  B --> C{"Succeeded?"}
+  C -- yes --> D["Continue"]
+  C -- no --> E{"What failed?"}
+  E -- "login or token" --> F["Fresh login once"]
+  F --> G{"CAPTCHA, block or 403?"}
+  G -- yes --> H["ntfy: needs you, do not work around it"]
+  G -- no --> I["Make no moves, alert"]
+  E -- "data source down" --> J{"Cached data under 24h old?"}
+  J -- yes --> K["Continue on cache, mark card"]
+  J -- no --> I
+  E -- "submit" --> L{"Partly saved?"}
+  L -- yes --> M["Urgent alert: what saved and what did not"]
+  L -- no --> I
+  E -- "machine missed a run" --> N["Mac takes over or alert on next run"]
+  E -- "git push" --> P["Keep commit locally, push on next run, ntfy; FPL moves still go ahead"]
+```
+
+## Approved decisions
+
+These were the review items on the flowchart, approved as written.
+
+1. The dry run happens before the account exists, so no gameweeks are lost to a rolled-over team.
+2. The verification email is read by the bot over IMAP with an app password for `soohzabimaru864`.
+3. Secrets are stored in the Windows Credential Manager and macOS Keychain.
+4. Card file layout under `decision-cards/`, `reviews/` and `rules-alerts/`, and that a failed git push never blocks FPL moves.
+5. Failover: a 15-minute tick, and the Mac takes over after 30 minutes without a Windows heartbeat, sent over ntfy.
+6. Early commits only for price moves. Wildcard and Free Hit only in the final run.
+7. The thresholds in section 5: 2 gameweeks as a short absence, Wildcard at 15+ points over the horizon, Free Hit at 10+ points in the week, and the Triple Captain and Bench Boost fallbacks.
+8. The bot adopts recalibrated model weights only when they beat the current model on backtest. Code changes stay with you.
+
+## Open items
+
+- The repo is public. Decision cards would show the team, strategy and FPL data to anyone (terms Cl.29 forbids republishing Game data). Make the repo private before go-live.
+
+## Schedule
+
+| Timing | What happens |
+|---|---|
+| Every 15 min | Scheduler run, heartbeat, kill-switch check |
+| Daily after 00:00 UTC | Data refresh, price watch, possible early commit |
+| Deadline − 24h | Weekly plan, draft card pushed to repo |
+| Deadline − 2h | Final run, final card, submit by deadline − 90 min |
+| 09:00 UK day after last match | Post-gameweek review and recalibration |
+| Tuesday 09:00 UK | Rules-change check |
