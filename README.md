@@ -22,7 +22,13 @@ Run these in **PowerShell**, one at a time.
    cd FPL_bot
    ```
 
-3. Create a private Python environment for the bot and install it:
+3. Allow PowerShell to run the environment's activation script. This is needed once per Windows user; answer `Y` if asked:
+
+   ```powershell
+   Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+   ```
+
+4. Create a private Python environment for the bot and install it. Check the prompt ends in `\FPL_bot>` first; these commands must run inside the repo folder:
 
    ```powershell
    py -m venv .venv
@@ -30,9 +36,9 @@ Run these in **PowerShell**, one at a time.
    pip install -e .
    ```
 
-   If PowerShell refuses to run `Activate.ps1`, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, answer `Y`, then try again.
+   When it's active, the prompt starts with `(.venv)`. Run the activate line again whenever you open a new PowerShell window to use `fplbot`.
 
-4. Run setup. It asks for the FPL password and the GitHub token with hidden typing and saves both to Windows Credential Manager. Nothing goes into the repo.
+5. Run setup. It asks for the FPL password and the GitHub token with hidden typing and saves both to Windows Credential Manager. Nothing goes into the repo.
 
    ```powershell
    fplbot setup
@@ -40,13 +46,13 @@ Run these in **PowerShell**, one at a time.
 
    At the end it prints your ntfy topic names. In the ntfy phone app, tap **+** and subscribe to the **alerts** and **control** topics. You should get a test notification straight away.
 
-5. Save a snapshot of live FPL data to the repo, so the model is built against real data:
+6. Save a snapshot of live FPL data to the repo, so the model is built against real data:
 
    ```powershell
    fplbot capture --push
    ```
 
-6. Check everything:
+7. Check everything:
 
    ```powershell
    fplbot status
