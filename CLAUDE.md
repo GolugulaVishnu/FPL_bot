@@ -2,7 +2,7 @@
 
 ## Rules knowledge base
 
-`docs/fpl-rules-context.md` is the authoritative FPL rules reference for this project (2026/27 season, v2.5, verified 2026-10-29 at GW9). Read the relevant part before writing or changing any logic that touches squads, transfers, prices, chips, deadlines, scoring, leagues or cups.
+`docs/fpl-rules-context.md` is the authoritative FPL rules reference for this project (2026/27 season, v2.6, verified 2026-10-29 at GW9). Read the relevant part before writing or changing any logic that touches squads, transfers, prices, chips, deadlines, scoring, leagues or cups.
 
 - Part A: official rules. The only part to treat as fact.
 - Part B: undocumented mechanics, each tagged `[OFFICIAL-API]`, `[OFFICIAL-NEWS]`, `[COMMUNITY]` or `[SPECULATIVE]`. Rely without a fallback only on the two `OFFICIAL` tags.
@@ -18,7 +18,7 @@
 
 - Autonomous, no human veto: the bot logs into the owner's FPL account and makes transfers, lineup, captaincy and chip moves itself. Before every FPL write it commits a decision card (`.txt`, with full reasoning) to `decision-cards/` and pushes it; alerts go by ntfy.
 - Runs only on the owner's machines (Windows primary, macOS backup), never from cloud servers. Never bypass CAPTCHAs, bot protection or other human checks; stop and alert instead.
-- Credentials (FPL password, tokens, GitHub token) live in the OS keychain (or environment variables / a git-ignored secrets file); never commit, log or expose them, including in decision cards.
+- Credentials (FPL password, tokens, GitHub token) live in the OS keychain (or environment variables / a git-ignored secrets file); the signed-in browser profile lives in the local data folder. Never commit, log or expose any of them, including in decision cards.
 - The repo must stay private: decision cards contain the team, strategy and FPL data.
 - Keep API reads and writes low-frequency and cached; never hammer endpoints near deadlines; don't republish Game data.
 - Money in integer tenths (1000 = £100.0m); use selling prices when computing funds.

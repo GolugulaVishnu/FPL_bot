@@ -367,6 +367,73 @@ def cmd_record(args) -> int:
     return 0
 
 
+def cmd_login(args) -> int:
+    """Sign in through a browser on this machine, read the team (no changes), optionally find the save token's source."""
+    import json as _json
+    from datetime import datetime, timezone
+    try:
+        from .fpl_session import FplBrowser, HumanCheck, SessionError
+    except ImportError:
+        print('The browser part is not installed. Run:  pip install -e ".[record]"  then  python -m playwright install chromium')
+        return 2
+    cfg = config_mod.load()
+    try:
+        password = secret_store.fpl_password(cfg.fpl_email)
+    except secret_store.MissingSecret as e:
+        print(e)
+        return 2
+    try:
+        boot = FplPublicClient(paths.cache_dir()).bootstrap()
+        names = {e["id"]: e["web_name"] for e in boot["elements"]}
+    except (FplBlocked, FplError):
+        names = {}
+    print("Opening the FPL site in a browser window and signing in. Nothing on the team is changed.")
+    try:
+        with FplBrowser(headless=args.headless) as b:
+            entry = b.login(cfg.fpl_email, password, wait_for_human=0 if args.headless else 300)
+            cfg.extra["entry"] = entry
+            config_mod.save(cfg)
+            team = b.my_team(entry)
+            t = team.get("transfers", {})
+            print(f"\nSigned in. Team ID {entry}.")
+            print(f"  Bank {t.get('bank', 0) / 10:.1f}m, team value {t.get('value', 0) / 10:.1f}m, "
+                  f"free transfers {t.get('limit') if t.get('limit') is not None else 'unlimited'}, "
+                  f"made this week {t.get('made', 0)}")
+            for p in team.get("picks", []):
+                tag = " (C)" if p.get("is_captain") else " (V)" if p.get("is_vice_captain") else ""
+                print(f"  {p.get('position'):>2}. {names.get(p['element'], p['element'])}{tag}"
+                      f"  sell {p.get('selling_price', 0) / 10:.1f}m")
+            chips = [f"{c.get('name')}: {c.get('status_for_entry')}" for c in team.get("chips", [])]
+            print("  Chips: " + (", ".join(chips) or "none listed"))
+            if args.probe:
+                print("\nIn the browser window: open Pick Team, change the vice-captain and Save, then change it back and Save.")
+                input("Press Enter here when both saves are done... ")
+                probe = b.probe_csrf_source()
+                out = paths.REPO_ROOT / "recordings" / f"save-token-probe-{datetime.now(timezone.utc):%Y%m%d-%H%M%S}.json"
+                text = _json.dumps(probe, indent=1)
+                from .record.sanitize import leak_check
+                problems = leak_check(text, [password, cfg.fpl_email])
+                if problems:
+                    print("Probe result not saved: " + "; ".join(problems))
+                    return 1
+                out.parent.mkdir(exist_ok=True)
+                out.write_text(text + "\n", encoding="utf-8")
+                print(f"Save token seen: {probe['save_token_seen']}. Found in: {', '.join(probe['where']) or 'not found in storage'}")
+                print(f"Saved {out.relative_to(paths.REPO_ROOT)} (names only, no values)")
+                if args.push:
+                    gitops.commit_and_push(paths.REPO_ROOT, [out], "Add save-token probe (names only)",
+                                           secret_store.github_token())
+                    print("Committed and pushed.")
+    except HumanCheck as e:
+        Ntfy(cfg.ntfy_server).send(cfg.topic_alerts, str(e), title="FPL bot needs you", priority="high", tags=["rotating_light"])
+        print(e)
+        return 1
+    except SessionError as e:
+        print(f"Sign-in failed: {e}")
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="fplbot")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -423,6 +490,12 @@ def main(argv: list[str] | None = None) -> int:
     rc = sub.add_parser("record", help="log in and save the team in a browser while the bot records how the site does it")
     rc.add_argument("--push", action="store_true", help="commit and push the cleaned recording")
     rc.set_defaults(func=cmd_record)
+
+    lg = sub.add_parser("login", help="sign in through a browser and read the team (changes nothing)")
+    lg.add_argument("--probe", action="store_true", help="also find where the site keeps its save token (you save twice)")
+    lg.add_argument("--push", action="store_true", help="commit and push the probe result")
+    lg.add_argument("--headless", action="store_true", help="no visible window (scheduled runs)")
+    lg.set_defaults(func=cmd_login)
 
     args = p.parse_args(argv)
     logs.setup()

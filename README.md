@@ -97,6 +97,16 @@ fplbot record --push
 
 A browser window opens on the FPL site. Log in, enter and save the team from the decision card, wait a few seconds, then close the window. The bot saves a cleaned record of the site's requests to `recordings/`: request addresses and data layout, player ids, captain flags and chip names. Passwords, cookies, login tokens and your email are removed, and the file is checked again for leaks before it is written. The browser profile is temporary, so nothing from the login is kept.
 
+## Signing in (check only)
+
+```powershell
+fplbot login
+```
+
+Opens the FPL site in a browser window, signs in with the saved password, and prints the team: bank, free transfers, chips and players with selling prices. It changes nothing. If FPL shows a CAPTCHA, solve it in the window (the bot waits up to 5 minutes). The sign-in is remembered in a browser profile in the local data folder, so later runs rarely need the password.
+
+`fplbot login --probe --push` also finds where the site keeps the token it needs to save a team. Follow the prompt (change the vice-captain and save, then change it back and save). Only names are recorded, never values.
+
 ## Everyday commands
 
 | Command | What it does |

@@ -317,6 +317,7 @@ These were the review items on the flowchart, approved as written.
 7. The thresholds in section 5: 2 gameweeks as a short absence, Wildcard at 15+ points over the horizon, Free Hit at 10+ points in the week, and the Triple Captain and Bench Boost fallbacks.
 8. The bot adopts recalibrated model weights only when they beat the current model on backtest. Code changes stay with you.
 9. The repo is private (since 2026-10-30), so decision cards are not published. Keep it private.
+11. Signing in (added 2026-10-30): the bot signs in through a real browser on the owner's machine, because FPL's login runs behind Cloudflare and DataDome bot checks. It makes its requests from inside the page using the login token the site itself creates, held in memory only. The browser profile (session cookies) lives in the local data folder, never the repo, so sign-ins are rare. A CAPTCHA or other human check stops the bot and alerts the owner.
 10. Data sources (changed 2026-10-30): the FPL API (which carries Opta xG and xA per player per match) and the public vaastav/Fantasy-Premier-League archive (MIT licence) for past seasons. Understat and FBref are not used.
 
 ## Schedule
