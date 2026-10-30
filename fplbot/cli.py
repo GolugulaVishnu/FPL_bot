@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import getpass
 import sys
 
@@ -158,6 +159,81 @@ def cmd_schedule(args) -> int:
     return 0
 
 
+def _latest_sample():
+    root = paths.REPO_ROOT / "samples"
+    dirs = sorted(d for d in root.glob("*") if (d / "bootstrap-static.json").exists()) if root.exists() else []
+    return dirs[-1] if dirs else None
+
+
+def _current_data(args):
+    """Bootstrap, fixtures and live data: from a samples/ folder if asked, else the FPL API (cached)."""
+    from .data import fetch_current
+    from .sources.current import load_snapshot_dir
+    if getattr(args, "snapshot", None):
+        folder = Path(args.snapshot) if args.snapshot != "latest" else _latest_sample()
+        if folder is None:
+            raise SystemExit("No snapshot in samples/. Run: fplbot capture --push")
+        return load_snapshot_dir(folder)
+    return fetch_current(FplPublicClient(paths.cache_dir()))
+
+
+def cmd_data(args) -> int:
+    from .data import load_current, load_history
+    from .datastore import DataStore
+    ds = DataStore(paths.db_path())
+    if args.what in ("history", "all"):
+        for season, n in load_history(ds, paths.cache_dir(), args.seasons).items():
+            print(f"{season}: {n} match rows loaded")
+    if args.what in ("current", "all"):
+        try:
+            boot, fx, lives = _current_data(args)
+        except (FplBlocked, FplError) as e:
+            print(f"Could not read FPL data: {e}")
+            return 1
+        season, n = load_current(ds, boot, fx, lives)
+        print(f"{season}: {n} match rows loaded ({len(lives)} finished gameweeks)")
+    return 0
+
+
+def cmd_backtest(args) -> int:
+    from .datastore import DataStore
+    from .model import backtest
+    from .model.project import previous_season
+    ds = DataStore(paths.db_path())
+    if args.season not in ds.seasons():
+        print(f"No data for {args.season}. Run: fplbot data history")
+        return 1
+    prior = previous_season(args.season)
+    res = backtest.run(ds, args.season, prior if prior in ds.seasons() else None, args.start, args.end)
+    text = backtest.report(res)
+    print(text)
+    if args.save:
+        out = paths.REPO_ROOT / "reports" / f"backtest-{args.season}.txt"
+        out.parent.mkdir(exist_ok=True)
+        out.write_text(text + "\n", encoding="utf-8")
+        print(f"\nSaved {out.relative_to(paths.REPO_ROOT)}")
+    return 0
+
+
+def cmd_project(args) -> int:
+    from datetime import datetime, timezone
+    from .datastore import DataStore
+    from .model.project import format_table, project_upcoming
+    ds = DataStore(paths.db_path())
+    try:
+        boot, fx, _lives = _current_data(args)
+    except (FplBlocked, FplError) as e:
+        print(f"Could not read FPL data: {e}")
+        return 1
+    now = datetime.fromisoformat(args.at).replace(tzinfo=timezone.utc) if args.at else datetime.now(timezone.utc)
+    gws, projs = project_upcoming(ds, boot, fx, now, args.horizon)
+    if not gws:
+        print("No upcoming gameweeks.")
+        return 0
+    print(format_table(gws, projs, args.top, args.position))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="fplbot")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -181,6 +257,27 @@ def main(argv: list[str] | None = None) -> int:
     sc.add_argument("action", choices=["install", "remove"])
     sc.add_argument("--run-when-logged-off", action="store_true")
     sc.set_defaults(func=cmd_schedule)
+
+    d = sub.add_parser("data", help="load past seasons and/or the current season into the data store")
+    d.add_argument("what", choices=["history", "current", "all"])
+    d.add_argument("--seasons", nargs="+", default=["2024-25", "2025-26"], help="past seasons to load")
+    d.add_argument("--snapshot", help="load the current season from a samples/ folder ('latest' for the newest)")
+    d.set_defaults(func=cmd_data)
+
+    b = sub.add_parser("backtest", help="replay a past season week by week and score the model")
+    b.add_argument("--season", default="2025-26")
+    b.add_argument("--start", type=int, default=2)
+    b.add_argument("--end", type=int, default=38)
+    b.add_argument("--save", action="store_true", help="write the report to reports/")
+    b.set_defaults(func=cmd_backtest)
+
+    pr = sub.add_parser("project", help="show expected points for the next gameweeks")
+    pr.add_argument("--horizon", type=int, default=6)
+    pr.add_argument("--top", type=int, default=30)
+    pr.add_argument("--position", choices=["GKP", "DEF", "MID", "FWD"])
+    pr.add_argument("--snapshot", help="use a samples/ folder instead of the live API ('latest' for the newest)")
+    pr.add_argument("--at", help="pretend it is this UTC time, e.g. 2026-10-30T12:00 (testing)")
+    pr.set_defaults(func=cmd_project)
 
     args = p.parse_args(argv)
     logs.setup()

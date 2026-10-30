@@ -15,7 +15,7 @@ from .conftest import make_bootstrap
 BOOT = make_bootstrap([
     (8, "2026-10-23T17:30:00Z", True, True),
     (9, "2026-10-31T11:00:00Z", False, False),
-])
+]) | {"teams": [], "elements": []}
 
 
 class FakeResponse:

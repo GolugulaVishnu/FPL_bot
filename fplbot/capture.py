@@ -5,26 +5,25 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .data import fetch_current
 from .fpl_api import FplPublicClient
-from .schedule import latest_checked_event, parse_events
 
 SAMPLES_DIR = "samples"
 
 
 def capture(client: FplPublicClient, repo: Path, now: datetime | None = None) -> list[Path]:
-    """Fetch bootstrap-static, fixtures and the latest finished gameweek's live data.
+    """Fetch bootstrap-static, fixtures and every finished gameweek's live data into samples/<UTC date>/.
 
-    Always fetches fresh (no cache) and writes to samples/<UTC date>/.
+    Bootstrap and fixtures are always fetched fresh. Finished gameweeks are cached
+    for good after the first fetch, so a repeat capture costs two requests.
     """
     now = now or datetime.now(timezone.utc)
     out = repo / SAMPLES_DIR / now.strftime("%Y-%m-%d")
     out.mkdir(parents=True, exist_ok=True)
 
-    bootstrap = client.bootstrap(max_age=0)
-    files = {"bootstrap-static.json": bootstrap, "fixtures.json": client.fixtures(max_age=0)}
-    last = latest_checked_event(parse_events(bootstrap))
-    if last is not None:
-        files[f"event-{last.id}-live.json"] = client.event_live(last.id, max_age=0)
+    bootstrap, fixtures, lives = fetch_current(client, bootstrap_max_age=0)
+    files = {"bootstrap-static.json": bootstrap, "fixtures.json": fixtures}
+    files.update({f"event-{gw}-live.json": live for gw, live in sorted(lives.items())})
 
     written = []
     for name, data in files.items():

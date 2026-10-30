@@ -25,10 +25,16 @@ def _not_built(job: str) -> Callable[..., str]:
 
 
 def _daily(ctx: dict) -> str:
-    client: FplPublicClient = ctx["client"]
-    client.bootstrap(max_age=0)
-    client.fixtures(max_age=0)
-    return "daily: FPL data refreshed"
+    from .data import fetch_current, load_current
+    from .datastore import DataStore
+
+    bootstrap, fixtures, lives = fetch_current(ctx["client"], bootstrap_max_age=0)
+    ds = DataStore(paths.db_path())
+    try:
+        season, n = load_current(ds, bootstrap, fixtures, lives)
+    finally:
+        ds.close()
+    return f"daily: FPL data refreshed, {n} match rows for {season}"
 
 
 # Jobs are filled in as each stage of the bot is built.

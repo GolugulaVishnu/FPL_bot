@@ -2,7 +2,7 @@
 
 An autonomous Fantasy Premier League bot that runs on your own machines. Design: `docs/system-flow.md`. Rules: `docs/fpl-rules-context.md`.
 
-**Status:** setup, data capture and the 15-minute scheduled run are built. Planning, submitting and reviews are still to come, so the scheduler is not switched on yet.
+**Status:** setup, data capture, the 15-minute scheduled run, the data store and the expected-points model (with backtest) are built. Transfer planning, submitting and reviews are still to come, so the scheduler is not switched on yet.
 
 ## First-time setup on Windows
 
@@ -57,6 +57,20 @@ Run these in **PowerShell**, one at a time.
    ```powershell
    fplbot status
    ```
+
+## Data and model
+
+Run these after setup (inside `FPL_bot`, with `(.venv)` showing):
+
+```powershell
+fplbot data all
+fplbot project --top 30
+fplbot backtest --season 2025-26
+```
+
+- `fplbot data all` downloads the 2024-25 and 2025-26 seasons from the public FPL archive once, then loads this season from the FPL API (a few requests; finished gameweeks are cached for good).
+- `fplbot project` prints expected points for the next 6 gameweeks. Add `--position MID` to filter, or `--horizon 3` for fewer weeks.
+- `fplbot backtest` replays a past season week by week and compares the model with recent form and with FPL's own projection. Add `--save` to write the report to `reports/`.
 
 ## Everyday commands
 

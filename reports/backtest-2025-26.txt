@@ -1,0 +1,29 @@
+Backtest 2025-26, gameweeks 2-38 (37 gameweeks), 28497 player-gameweeks
+
+Accuracy per player per gameweek (lower error and higher correlation are better)
+                                  MAE   RMSE   corr    rows
+  Model                          1.00   1.96  0.569   28497
+  Recent form (last 5)           1.05   2.13  0.499   28497
+
+Where the archive has FPL's own projection (same rows for both):
+  Model                          1.56   2.52  0.449    4451
+  FPL projection                 1.36   2.02  0.697    4451
+  Note: FPL's projection knows about injuries and suspensions; this backtest's model does not.
+
+By position (model)
+  GKP                            0.60   1.42  0.664    3286
+  DEF                            1.17   2.14  0.531    9331
+  MID                            0.96   1.92  0.574   12740
+  FWD                            1.08   2.08  0.575    3140
+
+Picks (average actual points per gameweek)
+  Captain = model's top player:         6.24
+  Captain = best recent form:           4.05
+  Same 10 gameweeks where FPL's projection exists:
+    Captain = FPL projection's top:    11.10
+    Captain = model's top player:       9.00
+  Model's top 11, per player:           4.78
+  Recent form's top 11, per player:     3.97
+  Best possible 11 (hindsight):        12.69
+
+Top-11 picks ignore price, squad rules and position limits; they test ranking only.
