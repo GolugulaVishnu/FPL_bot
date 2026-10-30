@@ -1,9 +1,9 @@
 FPL BOT DECISION CARD | 2026-27 GW9 | FINAL
 ==============================================================================
-Generated:  2026-10-30 19:54 UTC  (model 7f03e6f)
+Generated:  2026-10-30 20:35 UTC  (model d18b6bd)
 Deadline:   Sat 31 Oct 2026 11:00 UTC  (from the FPL API)
 Mode:       Initial squad: the team has no players yet, so all 15 are picked freely (unlimited transfers before the team's first deadline).
-Data:       FPL API, read 2026-10-30 19:54 UTC; 8 finished gameweeks loaded
+Data:       FPL API, read 2026-10-30 20:35 UTC; 8 finished gameweeks loaded
 Team name:  xP Machine
 
 SUMMARY
