@@ -101,7 +101,7 @@ def cmd_capture(args) -> int:
         try:
             pushed = gitops.commit_and_push(paths.REPO_ROOT, files, "Add FPL data snapshot",
                                             secret_store.github_token())
-            print("Committed and pushed." if pushed else "No changes to commit.")
+            print("Committed and pushed." if pushed else "No new data to commit; repo is up to date.")
         except (gitops.GitError, secret_store.MissingSecret) as e:
             print(f"Saved locally but not pushed: {e}")
             return 1
