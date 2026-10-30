@@ -25,6 +25,9 @@ class PlayerProjection:
     parts_next: dict[str, float]     # breakdown for the next gameweek
     minutes_next: float
     notes: list[str] = field(default_factory=list)
+    # Evidence behind the numbers, for the decision card's reasoning.
+    fixtures_by_gw: dict[int, list[str]] = field(default_factory=dict)   # e.g. {9: ["LIV (A)"]}
+    evidence: dict[str, float] = field(default_factory=dict)             # p_play, p60, xg90, xa90, ...
 
     @property
     def total(self) -> float:
@@ -67,7 +70,7 @@ def project_upcoming(store: DataStore, bootstrap: dict, fixtures_json: list, now
         prof.position = pos
         notes = list(prof.notes)
         tc = state.team_code.get(el["team"])
-        xp_by_gw, parts_next, minutes_next = {}, {}, 0.0
+        xp_by_gw, parts_next, minutes_next, fixtures_by_gw = {}, {}, 0.0, {}
         for i, gw in enumerate(gws):
             fac, why = availability.factor(el.get("status"), el.get("chance_of_playing_next_round"),
                                            el.get("news"), gw_start[gw], i, now)
@@ -75,6 +78,7 @@ def project_upcoming(store: DataStore, bootstrap: dict, fixtures_json: list, now
                 notes.append(why)
             total = 0.0
             fx = fixtures_by_team_gw.get((el["team"], gw), [])
+            fixtures_by_gw[gw] = [f"{teams[o]['short_name']} ({'H' if h else 'A'})" for o, h in fx]
             for j, (opp, home) in enumerate(fx):
                 p = project_fixture(prof, tc, state.team_code.get(opp), home, state.ratings, pts, fac)
                 total += p.xp
@@ -90,7 +94,11 @@ def project_upcoming(store: DataStore, bootstrap: dict, fixtures_json: list, now
         out.append(PlayerProjection(
             element=el["id"], code=el["code"], name=el["web_name"], team=teams[el["team"]]["short_name"],
             position=pos, price=el["now_cost"], status=el.get("status", "a"), xp_by_gw=xp_by_gw,
-            parts_next=parts_next, minutes_next=minutes_next, notes=notes))
+            parts_next=parts_next, minutes_next=minutes_next, notes=notes, fixtures_by_gw=fixtures_by_gw,
+            evidence={"p_play": prof.p_play, "p60": prof.p60, "mins_if_play": prof.mins_if_play,
+                      "xg90": prof.rates.get("xg", 0.0), "xa90": prof.rates.get("xa", 0.0),
+                      "saves90": prof.rates.get("saves", 0.0), "bonus90": prof.rates.get("bonus", 0.0),
+                      "dc_hit": prof.dc_hit, "n_matches": float(prof.n_matches), "nineties": prof.nineties}))
     return gws, out
 
 

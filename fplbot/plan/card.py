@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ..model.project import PlayerProjection
 from .chips import ChipDecision
+from .reasons import player_reasons, squad_story
 from .squad import SquadPlan
 
 CHIP_NAMES = {"bboost": "Bench Boost", "3xc": "Triple Captain", "wildcard": "Wildcard", "freehit": "Free Hit", None: "none"}
@@ -59,6 +60,9 @@ def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime
     L.append(f"  Projected points GW{g0}: {xi_pts:.1f} (incl. captain{' and bench' if chip.chip == 'bboost' else ''})")
     L.append(f"  Planning horizon {horizon}, later weeks weighted less (x0.85 per week)")
     L.append("")
+    L.append("HOW THE SQUAD WAS BUILT")
+    L.extend(squad_story(plan, all_projs, budget))
+    L.append("")
     head = f"  {'Pos':<4}{'Player':<21}{'Team':<5}{'£m':>5}  {'GW' + str(g0) + ' opp':<12}{'xP':>6}{'xP' + str(len(plan.gws)) + 'w':>7}{'mins':>6}  breakdown"
     L.append("STARTING XI")
     L.append(head)
@@ -85,6 +89,9 @@ def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime
     for line in chip.lines:
         L.append(f"  {line}")
     L.append("")
+
+    L.append("WHY EACH PLAYER")
+    L.extend(player_reasons(plan, all_projs))
 
     L.append(f"BEST PLAYERS LEFT OUT (by weighted xP over {horizon})")
     in_squad = {p.element for p in plan.squad}

@@ -159,6 +159,8 @@ flowchart TD
 - Every move: transfers, hits, chip, XI, bench order, captain and vice-captain.
 - For each move: the expected-points numbers behind it, the alternatives it beat and by how much, the assumptions it relies on (minutes, fixtures, injuries), and where the bot's projection differs from public projections.
 - Confidence for each assumption, so you can see which ones to penalise in code if they turn out wrong.
+- How the squad was built: the chain of reasoning from the goal and budget through spend by position, formation, club stacks, bench and captaincy (added 2026-10-30 at the owner's request).
+- Why each player: his projection, minutes record, where his points come from (with per-90 evidence), his fixture run, his value rank in his position, and how he compares with the best similar-priced alternative.
 
 ## 5. Hit, injury and chip rules
 

@@ -55,3 +55,22 @@ def test_chip_rules():
         p.xp_by_gw[9] = 0.5
     d2 = chips.decide(plan, {"bboost", "3xc"}, first_gameweek=True)
     assert d2.chip == "3xc"  # captain's week equals the best later week, so Triple Captain qualifies
+
+
+def test_card_explains_every_player():
+    from datetime import datetime, timezone
+    from fplbot.plan import card
+    projs, team_of = pool()
+    for p in projs:
+        p.fixtures_by_gw = {9: ["AAA (H)"], 10: ["BBB (A)"]}
+        p.evidence = {"p_play": 0.9, "p60": 0.8, "mins_if_play": 85, "xg90": 0.3, "xa90": 0.1, "n_matches": 8}
+        p.parts_next = {"appearance": 2.0, "goals": 1.0, "bonus": 0.4}
+    plan = squad.pick_squad(projs, GWS, rules.DEFAULT, team_of)
+    d = chips.decide(plan, {"bboost"}, first_gameweek=True)
+    now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+    text = card.render(season="2026-27", gw=9, kind="draft", deadline=now, now=now, plan=plan, chip=d, all_projs=projs,
+                       opponents={}, budget=1000, mode="test", model_version="x", data_note="test", team_name=None)
+    assert "HOW THE SQUAD WAS BUILT" in text and "WHY EACH PLAYER" in text
+    for p in plan.squad:
+        assert f"  {p.name} ({p.team}, {p.position}" in text
+    assert text.count("Versus alternatives:") == 15
