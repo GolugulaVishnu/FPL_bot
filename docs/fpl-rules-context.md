@@ -2,7 +2,7 @@
 
 ```yaml
 title: Fantasy Premier League rules knowledge base (Classic game, Classic and H2H leagues, cups)
-version: v2.2
+version: v2.3
 rules_baseline: "2026/27 season, verified 2026-10-29 at GW9 (GW8 finished; GW9 deadline 2026-10-31T11:00Z)"
 authoritative_sources:
   - Official rules page, rendered in a browser 2026-10-29: https://fantasy.premierleague.com/help/rules
@@ -415,7 +415,7 @@ Tags: `[OFFICIAL-API]` = observed in live API data or config. `[OFFICIAL-NEWS]` 
 - The bot runs on the owner's own machines: Windows primary, macOS backup. It never logs in from cloud servers.
 - The bot may store the owner's password, session and tokens. The owner enters the FPL password once per machine through the bot's setup command, which saves it to the OS keychain (Windows Credential Manager, macOS Keychain). Secrets stay out of the repository (OS keychain, environment variables or a git-ignored secrets file) and never expose credentials or API keys in logs, decision cards or calls to anything other than the FPL login and Game endpoints.
 - Login runs through PingOne OAuth 2.0 / OIDC with PKCE at account.premierleague.com (B9).
-- Decision cards, gameweek reviews and rules-change reports are `.txt` files the bot commits and pushes to this repo (`decision-cards/`, `reviews/`, `rules-alerts/`). Alerts go by ntfy push notification. While the repo is public, cards republish Game data (Cl.29); make the repo private before go-live.
+- Decision cards, gameweek reviews and rules-change reports are `.txt` files the bot commits and pushes to this repo (`decision-cards/`, `reviews/`, `rules-alerts/`). Alerts go by ntfy push notification. The repo is private (since 2026-10-30) so cards do not republish Game data (Cl.29); keep it private.
 
 Risk accepted by the owner: the published terms (A17: Cl.5, 6, 27, 28(d)) prohibit third-party registration, account sharing and automated access, and Cl.35-37 allow suspension or deletion of the team. To keep the footprint small: keep reads and writes low-frequency, cache aggressively, never hammer endpoints around deadlines, and do not republish Game data (Cl.29).
 
@@ -734,6 +734,7 @@ news_keywords: [changes, new, chip, "free transfer", rules, "Second Chance", Cup
 
 | Version | Date | Change |
 |---|---|---|
+| v2.3 | 2026-10-30 | Repo made private; C1 note updated. |
 | v2.2 | 2026-10-30 | Owner created the FPL account; the bot logs in only and never signs up. Password entry via the setup command into the OS keychain. |
 | v2.1 | 2026-10-30 | C1 updated with the owner's setup decisions: account created by the bot at go-live for soohzabimaru864@gmail.com, runs on the owner's Windows machine with macOS backup, password in the OS keychain, no human veto, decision cards as .txt files in the repo, ntfy alerts. Points to `docs/system-flow.md`. |
 | v2.0 | 2026-10-29 | Operating mode changed by the account owner from human-confirmed decision support to autonomous: the bot logs in and makes moves itself. Rewrote C1, C4, C6, C7, B9, D2 and E6 to match. A17 terms excerpts left verbatim, with a note that the owner accepts the risk. |

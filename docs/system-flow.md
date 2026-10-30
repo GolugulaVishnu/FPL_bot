@@ -312,10 +312,7 @@ These were the review items on the flowchart, approved as written.
 6. Early commits only for price moves. Wildcard and Free Hit only in the final run.
 7. The thresholds in section 5: 2 gameweeks as a short absence, Wildcard at 15+ points over the horizon, Free Hit at 10+ points in the week, and the Triple Captain and Bench Boost fallbacks.
 8. The bot adopts recalibrated model weights only when they beat the current model on backtest. Code changes stay with you.
-
-## Open items
-
-- The repo is public. Decision cards would show the team, strategy and FPL data to anyone (terms Cl.29 forbids republishing Game data). Make the repo private before go-live.
+9. The repo is private (since 2026-10-30), so decision cards are not published. Keep it private.
 
 ## Schedule
 
