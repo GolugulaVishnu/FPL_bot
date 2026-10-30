@@ -1,9 +1,9 @@
 FPL BOT DECISION CARD | 2026-27 GW9 | FINAL
 ==============================================================================
-Generated:  2026-10-30 20:35 UTC  (model d18b6bd)
+Generated:  2026-10-30 21:12 UTC  (model c26cbf3)
 Deadline:   Sat 31 Oct 2026 11:00 UTC  (from the FPL API)
 Mode:       Initial squad: the team has no players yet, so all 15 are picked freely (unlimited transfers before the team's first deadline).
-Data:       FPL API, read 2026-10-30 20:35 UTC; 8 finished gameweeks loaded
+Data:       FPL API, read 2026-10-30 21:12 UTC; 8 finished gameweeks loaded
 Team name:  xP Machine
 
 SUMMARY
@@ -12,6 +12,18 @@ SUMMARY
   Chip: Bench Boost
   Projected points GW9: 71.5 (incl. captain and bench)
   Planning horizon GW9-14, later weeks weighted less (x0.85 per week)
+
+HOW THE SQUAD WAS BUILT
+  1. Goal: the most expected points over GW9-14, nearer weeks counting more, within 100.0m, 2/5/5/3 and max 3 per club.
+  2. Highest projected players over the horizon: Haaland 33.6, Gabriel 32.4, Mbeumo 30.0, Tavernier 29.6, Silva 27.4.
+  3. Biggest spend: Haaland at 15.8m (33.6 xP over the horizon). That leaves 84.2m for the other 14, about 6.0m each.
+  4. Money by position: GKP 11.2m, DEF 28.6m, MID 31.6m, FWD 27.5m.
+     Value by position (median xP per £m over the horizon, players expected to play 60+): GKP 3.84, DEF 4.09, MID 3.59, FWD 3.43. Best value right now: defenders.
+     Defensive contribution points are 3.9 of the defenders' 22.3 projected in GW9.
+  5. Formation 4-4-2: the XI is whichever 11 project most in GW9 within the formation rules.
+  6. Clubs with more than one player: ARS x3, BOU x3, LEE x2. The optimiser has no club preference beyond the 3-player limit; the club ratings and fixtures behind these picks are under CLUBS.
+  7. Bench: 23.1m on 4 players projecting 15.1 in GW9. Bench points count at 10% in the optimiser (auto-sub cover), so cheap but playing bench players win.
+  8. Captain: the starter with the highest GW9 projection; vice: next highest who is expected to play 60+ minutes.
 
 STARTING XI
   Pos Player               Team    £m  GW9 opp         xP   xP6w  mins  breakdown
@@ -47,6 +59,165 @@ CHIPS
   Triple Captain: Haaland projects 5.84 this week; best captain score in the rest of the 6-week horizon is 6.14 -> hold.
   Wildcard: not needed (transfers are already unlimited before the team's first deadline).
   Free Hit: not allowed in a team's first gameweek.
+
+CLUBS IN THE SQUAD
+  Ratings come from expected goals for and against, recent matches weighted more (1.00 = league average).
+  ARS x3: attack 1.18 (creates 18% above average), defence 0.63 (concedes 37% less than average).
+    Opponents GW9-14: LIV (A), HUL (H), NEW (A), MCI (H), BRE (A), TOT (A). Their average attack 1.02, average defence 0.97.
+  BOU x3: attack 1.20 (creates 20% above average), defence 0.93 (concedes 7% less than average).
+    Opponents GW9-14: LEE (H), IPS (A), NFO (H), FUL (A), BHA (H), HUL (H). Their average attack 1.00, average defence 1.02.
+  LEE x2: attack 0.98 (creates 2% below average), defence 0.96 (concedes 4% less than average).
+    Opponents GW9-14: BOU (A), TOT (H), CHE (A), COV (H), MCI (A), IPS (H). Their average attack 1.03, average defence 0.99.
+  BHA x1: attack 1.20 (creates 20% above average), defence 0.93 (concedes 7% less than average).
+    Opponents GW9-14: MCI (A), BRE (H), HUL (A), NEW (H), BOU (A), NFO (A). Their average attack 1.09, average defence 1.00.
+  TOT x1: attack 0.81 (creates 19% below average), defence 0.87 (concedes 13% less than average).
+    Opponents GW9-14: CRY (H), LEE (A), IPS (H), SUN (A), FUL (H), ARS (H). Their average attack 1.00, average defence 1.00.
+  MUN x1: attack 1.14 (creates 14% above average), defence 0.96 (concedes 4% less than average).
+    Opponents GW9-14: CHE (A), AVL (H), LIV (A), BRE (H), NEW (A), COV (H). Their average attack 1.00, average defence 0.99.
+  SUN x1: attack 0.90 (creates 10% below average), defence 1.05 (concedes 5% more than average).
+    Opponents GW9-14: COV (A), CHE (H), AVL (A), TOT (H), LIV (A), NEW (A). Their average attack 0.95, average defence 0.96.
+  COV x1: attack 0.80 (creates 20% below average), defence 0.98 (concedes 2% less than average).
+    Opponents GW9-14: SUN (H), EVE (A), CRY (H), LEE (A), IPS (H), MUN (A). Their average attack 0.99, average defence 1.06.
+  MCI x1: attack 1.32 (creates 32% above average), defence 0.90 (concedes 10% less than average).
+    Opponents GW9-14: BHA (H), NFO (A), FUL (H), ARS (A), LEE (H), BRE (A). Their average attack 1.08, average defence 0.91.
+  EVE x1: attack 0.90 (creates 10% below average), defence 1.00 (concedes about average).
+    Opponents GW9-14: NEW (A), COV (H), BRE (A), LIV (H), AVL (A), FUL (H). Their average attack 0.98, average defence 0.99.
+
+WHY EACH PLAYER
+  Raya (ARS, GKP, 6.2m) - starter
+    Projection: 3.74 xP in GW9, 23.5 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.40, bonus +0.47 (0.47 bonus per 90), saves +0.19 (2.0 saves per 90).
+    Fixtures: GW9 LIV (A) 3.7; GW10 HUL (H) 4.4; GW11 NEW (A) 3.9; GW12 MCI (H) 3.7; GW13 BRE (A) 3.6; GW14 TOT (A) 4.2.
+    Fixtures vs form: 23.6 of his 23.5 would come against average opponents; his fixtures are harder than average, worth -0.1.
+    Value: #12 of 19 goalkeepers for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Tzolakis (HUL, 1.5m less), by 1.9 weighted xP over the horizon.
+
+  Trafford (LEE, GKP, 5.0m) - bench 12
+    Projection: 3.56 xP in GW9, 22.9 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: saves +0.99 (3.2 saves per 90), clean-sheet chance +0.65, bonus +0.59 (0.59 bonus per 90).
+    Fixtures: GW9 BOU (A) 3.6; GW10 TOT (H) 4.1; GW11 CHE (A) 3.7; GW12 COV (H) 4.1; GW13 MCI (A) 3.5; GW14 IPS (H) 3.9.
+    Fixtures vs form: 22.8 of his 22.9 would come against average opponents; his fixtures are easier than average, worth +0.1.
+    Value: #1 of 19 goalkeepers for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Tzolakis (HUL, 0.3m less), by 1.5 weighted xP over the horizon.
+
+  Gabriel (ARS, DEF, 7.9m) - vice-captain
+    Projection: 5.07 xP in GW9, 32.4 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.40, defensive contributions +0.81 (hits the threshold in 40% of full games), bonus +0.65 (0.65 bonus per 90).
+    Fixtures: GW9 LIV (A) 5.1; GW10 HUL (H) 6.1; GW11 NEW (A) 5.4; GW12 MCI (H) 5.1; GW13 BRE (A) 5.1; GW14 TOT (A) 5.6.
+    Fixtures vs form: 32.7 of his 32.4 would come against average opponents; his fixtures are harder than average, worth -0.3.
+    Value: #32 of 82 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Tarkowski (EVE, 1.7m less), by 4.9 weighted xP over the horizon.
+
+  Silva (BOU, DEF, 5.0m) - starter
+    Projection: 4.71 xP in GW9, 27.4 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.20, defensive contributions +1.15 (hits the threshold in 57% of full games), goal threat +0.71 (0.11 xG per 90).
+    Fixtures: GW9 LEE (H) 4.7; GW10 IPS (A) 4.5; GW11 NFO (H) 4.6; GW12 FUL (A) 4.3; GW13 BHA (H) 4.3; GW14 HUL (H) 5.1.
+    Fixtures vs form: 27.2 of his 27.4 would come against average opponents; his fixtures are easier than average, worth +0.2.
+    Value: #1 of 82 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Vuskovic (BHA, 0.2m more), by 1.6 weighted xP over the horizon.
+
+  Hill (BOU, DEF, 5.5m) - starter
+    Projection: 4.50 xP in GW9, 26.1 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.20, defensive contributions +1.10 (hits the threshold in 55% of full games), bonus +0.34 (0.34 bonus per 90).
+    Fixtures: GW9 LEE (H) 4.5; GW10 IPS (A) 4.2; GW11 NFO (H) 4.4; GW12 FUL (A) 4.1; GW13 BHA (H) 4.1; GW14 HUL (H) 4.9.
+    Fixtures vs form: 26.0 of his 26.1 would come against average opponents; his fixtures are easier than average, worth +0.1.
+    Value: #13 of 82 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Vuskovic (BHA, 0.3m less), by 0.7 weighted xP over the horizon.
+
+  De Cuyper (BHA, DEF, 5.3m) - bench 15
+    Projection: 3.59 xP in GW9, 25.8 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 84 mins when he plays).
+    Points come from: clean-sheet chance +0.66, bonus +0.62 (0.66 bonus per 90), goal threat +0.61 (0.13 xG per 90).
+    Fixtures: GW9 MCI (A) 3.6; GW10 BRE (H) 4.6; GW11 HUL (A) 4.7; GW12 NEW (H) 4.9; GW13 BOU (A) 3.8; GW14 NFO (A) 4.1.
+    Fixtures vs form: 26.7 of his 25.8 would come against average opponents; his fixtures are harder than average, worth -0.9.
+    Value: #8 of 82 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Vuskovic (BHA, 0.1m less), by 0.4 weighted xP over the horizon.
+
+  Van Hecke (TOT, DEF, 4.9m) - starter
+    Projection: 4.42 xP in GW9, 25.3 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.25, defensive contributions +0.71 (hits the threshold in 35% of full games), goal threat +0.59 (0.08 xG per 90).
+    Fixtures: GW9 CRY (H) 4.4; GW10 LEE (A) 3.9; GW11 IPS (H) 4.6; GW12 SUN (A) 4.1; GW13 FUL (H) 4.4; GW14 ARS (H) 3.8.
+    Fixtures vs form: 25.3 of his 25.3 would come against average opponents; his fixtures are harder than average, worth -0.0.
+    Value: #3 of 82 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Vuskovic (BHA, 0.3m more), by 0.3 weighted xP over the horizon.
+
+  Mbeumo (MUN, MID, 7.9m) - starter
+    Projection: 4.71 xP in GW9, 30.0 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: goal threat +1.76 (0.39 xG per 90), bonus +0.47 (0.47 bonus per 90), chance creation +0.33 (0.12 xA per 90).
+    Fixtures: GW9 CHE (A) 4.7; GW10 AVL (H) 5.2; GW11 LIV (A) 4.5; GW12 BRE (H) 5.3; GW13 NEW (A) 5.0; GW14 COV (H) 5.3.
+    Fixtures vs form: 30.1 of his 30.0 would come against average opponents; his fixtures are harder than average, worth -0.1.
+    Value: #21 of 96 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Groß (BHA, 1.7m less), by 3.5 weighted xP over the horizon.
+
+  Tavernier (BOU, MID, 6.4m) - starter
+    Projection: 4.96 xP in GW9, 29.6 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 81 mins when he plays).
+    Points come from: goal threat +1.55 (0.33 xG per 90), bonus +0.74 (0.82 bonus per 90), chance creation +0.44 (0.15 xA per 90).
+    Fixtures: GW9 LEE (H) 5.0; GW10 IPS (A) 5.1; GW11 NFO (H) 4.9; GW12 FUL (A) 4.6; GW13 BHA (H) 4.8; GW14 HUL (H) 5.2.
+    Fixtures vs form: 29.4 of his 29.6 would come against average opponents; his fixtures are easier than average, worth +0.2.
+    Value: #2 of 96 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Groß (BHA, 0.2m less), by 3.4 weighted xP over the horizon.
+
+  E.Le Fée (SUN, MID, 5.7m) - starter
+    Projection: 4.22 xP in GW9, 25.4 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 85 mins when he plays).
+    Points come from: goal threat +0.79 (0.19 xG per 90), chance creation +0.50 (0.20 xA per 90), defensive contributions +0.39 (hits the threshold in 20% of full games).
+    Fixtures: GW9 COV (A) 4.2; GW10 CHE (H) 4.4; GW11 AVL (A) 4.2; GW12 TOT (H) 4.4; GW13 LIV (A) 4.0; GW14 NEW (A) 4.3.
+    Fixtures vs form: 25.6 of his 25.4 would come against average opponents; his fixtures are harder than average, worth -0.2.
+    Value: #4 of 96 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Groß (BHA, 0.5m more), by 0.5 weighted xP over the horizon.
+
+  Ødegaard (ARS, MID, 6.7m) - bench 14
+    Projection: 3.98 xP in GW9, 25.4 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 83 mins when he plays).
+    Points come from: goal threat +0.68 (0.18 xG per 90), chance creation +0.46 (0.21 xA per 90), bonus +0.44 (0.47 bonus per 90).
+    Fixtures: GW9 LIV (A) 4.0; GW10 HUL (H) 4.6; GW11 NEW (A) 4.3; GW12 MCI (H) 4.2; GW13 BRE (A) 4.2; GW14 TOT (A) 4.1.
+    Fixtures vs form: 25.6 of his 25.4 would come against average opponents; his fixtures are harder than average, worth -0.3.
+    Value: #24 of 96 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Groß (BHA, 0.5m less), by 0.5 weighted xP over the horizon.
+
+  Rudoni (COV, MID, 4.9m) - starter
+    Projection: 4.08 xP in GW9, 23.5 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 94% (about 76 mins when he plays).
+    Points come from: goal threat +1.08 (0.22 xG per 90), chance creation +0.46 (0.15 xA per 90), clean-sheet chance +0.33.
+    Fixtures: GW9 SUN (H) 4.1; GW10 EVE (A) 3.7; GW11 CRY (H) 4.1; GW12 LEE (A) 3.6; GW13 IPS (H) 4.4; GW14 MUN (A) 3.6.
+    Fixtures vs form: 22.9 of his 23.5 would come against average opponents; his fixtures are easier than average, worth +0.6.
+    Value: #1 of 96 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Gomez (BHA, 0.1m more), by 0.3 weighted xP over the horizon.
+
+  Haaland (MCI, FWD, 15.8m) - captain
+    Projection: 5.84 xP in GW9, 33.6 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 88 mins when he plays).
+    Points come from: goal threat +2.47 (0.62 xG per 90), bonus +1.18 (1.20 bonus per 90), chance creation +0.25 (0.08 xA per 90).
+    Fixtures: GW9 BHA (H) 5.8; GW10 NFO (A) 5.5; GW11 FUL (H) 5.9; GW12 ARS (A) 4.7; GW13 LEE (H) 5.9; GW14 BRE (A) 5.7.
+    Fixtures vs form: 34.9 of his 33.6 would come against average opponents; his fixtures are harder than average, worth -1.4.
+    Value: #18 of 18 forwards for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Evanilson (BOU, 9.5m less), by 6.5 weighted xP over the horizon.
+
+  Barry (EVE, FWD, 5.6m) - starter
+    Projection: 4.30 xP in GW9, 25.7 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 87 mins when he plays).
+    Points come from: goal threat +1.90 (0.49 xG per 90), bonus +0.38 (0.39 bonus per 90).
+    Fixtures: GW9 NEW (A) 4.3; GW10 COV (H) 4.4; GW11 BRE (A) 4.2; GW12 LIV (H) 4.2; GW13 AVL (A) 4.1; GW14 FUL (H) 4.4.
+    Fixtures vs form: 25.9 of his 25.7 would come against average opponents; his fixtures are harder than average, worth -0.2.
+    Value: #1 of 18 forwards for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Gonzalo (FUL, 0.4m more), by 2.1 weighted xP over the horizon.
+
+  Calvert-Lewin (LEE, FWD, 6.1m) - bench 13
+    Projection: 3.98 xP in GW9, 25.4 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 86 mins when he plays).
+    Points come from: goal threat +1.45 (0.45 xG per 90), bonus +0.65 (0.68 bonus per 90).
+    Fixtures: GW9 BOU (A) 4.0; GW10 TOT (H) 4.2; GW11 CHE (A) 4.1; GW12 COV (H) 4.4; GW13 MCI (A) 3.9; GW14 IPS (H) 5.0.
+    Fixtures vs form: 25.5 of his 25.4 would come against average opponents; his fixtures are harder than average, worth -0.1.
+    Value: #2 of 18 forwards for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Evanilson (BOU, 0.2m more), by 0.6 weighted xP over the horizon.
 
 BEST PLAYERS LEFT OUT (by weighted xP over GW9-14)
   GKP: Tzolakis HUL 4.7m 20.7; Suzuki AVL 5.0m 20.5; A.Becker LIV 5.5m 20.0
