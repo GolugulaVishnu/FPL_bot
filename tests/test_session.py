@@ -33,7 +33,11 @@ AUTO_OWNER = """<script>setTimeout(() => {
   document.querySelector('#pw').form.requestSubmit(); }, 3000);</script>"""
 
 
-def routes(captcha=False, owner_signs_in=False):
+BOUNCE = """<script>if (localStorage.getItem("tok") && location.pathname === "/" && !location.search)
+  setTimeout(() => location.href = "https://account.premierleague.com/as/authorize", 400);</script>"""
+
+
+def routes(captcha=False, owner_signs_in=False, bounce=False):
     def setup(context):
         def handle(route):
             req = route.request
@@ -54,9 +58,13 @@ def routes(captcha=False, owner_signs_in=False):
             elif url.startswith("https://fantasy.premierleague.com"):
                 owner_click = ('<script>if (!localStorage.getItem("tok") && !location.search) setTimeout(() => '
                                'document.querySelector("a").click(), 1000);</script>') if owner_signs_in else ""
-                return route.fulfill(status=200, content_type="text/html", body=HOME + owner_click)
+                return route.fulfill(status=200, content_type="text/html", body=HOME + owner_click + (BOUNCE if bounce else ""))
             elif "joinmypl" in url:
                 return route.fulfill(status=200, content_type="text/html", body="<html><body>Join MyPL</body></html>")
+            elif "/as/authorize" in url:
+                # The login refresh takes a moment, then returns with a code (as the real site does).
+                return route.fulfill(status=200, content_type="text/html", body='<script>setTimeout(() => '
+                                     'location.href="https://fantasy.premierleague.com/?code=1", 2000);</script>')
             elif url.startswith("https://account.premierleague.com/login"):
                 frame = '<iframe src="https://challenges.cloudflare.com/x" width="300" height="300"></iframe>' if captcha else ""
                 frame += AUTO_OWNER if owner_signs_in else ""
@@ -126,6 +134,16 @@ def test_manual_sign_in_records_layout_without_values(browser_env):
         assert any(btn["text"] == "Join MyPL" for btn in page["buttons"])
 
 
+class FakeContext:
+    """Stands in for the browser: reopening the bot's tab gives back the same fake page."""
+    def __init__(self, page):
+        self.page = page
+
+    def new_page(self):
+        self.page.goto = lambda *a, **k: None
+        return self.page
+
+
 def test_request_retries_when_page_navigates_mid_request():
     pytest.importorskip("playwright")
     from playwright.sync_api import Error as PwError
@@ -141,6 +159,9 @@ def test_request_retries_when_page_navigates_mid_request():
         def wait_for_timeout(self, ms):
             pass
 
+        def is_closed(self):
+            return False
+
         def evaluate(self, script, args):
             NavigatingPage.calls += 1
             if NavigatingPage.calls == 1:  # what the real site did right after sign-in
@@ -148,7 +169,8 @@ def test_request_retries_when_page_navigates_mid_request():
             return {"status": 200, "data": {"picks": [], "transfers": {"bank": 11}}}
 
     b = FplBrowser(headless=True)
-    b.page = NavigatingPage()
+    b.page = b._worker = NavigatingPage()
+    b._ctx = FakeContext(b.page)
     b._auth = "Bearer test"
     assert b.my_team(42)["transfers"]["bank"] == 11
     assert NavigatingPage.calls == 2
@@ -168,14 +190,32 @@ def test_request_retries_other_browser_errors_and_reports_them():
         def wait_for_timeout(self, ms):
             pass
 
+        def is_closed(self):
+            return False
+
         def evaluate(self, script, args):
             raise PwError("Page.evaluate: TypeError: Failed to fetch\nCall log: Bearer secret-xyz")
 
     b = FplBrowser(headless=True)
-    b.page = FlakyPage()
+    b.page = b._worker = FlakyPage()
+    b._ctx = FakeContext(b.page)
     b._auth = "Bearer secret-xyz"
     from fplbot.logs import register_secret
     register_secret("Bearer secret-xyz")
     with pytest.raises(SessionError) as err:
         b.get("/api/me/")
     assert "Failed to fetch" in str(err.value) and "secret-xyz" not in str(err.value)
+
+
+def test_reads_team_while_main_tab_keeps_redirecting(browser_env):
+    """The real site bounced to the account site after sign-in; the bot must not fight it."""
+    from fplbot.fpl_session import FplBrowser
+    with FplBrowser(headless=True, profile=browser_env, setup=routes()) as b:
+        assert b.login("owner@example.com", "right-password") == 42
+    with FplBrowser(headless=True, profile=browser_env, setup=routes(bounce=True)) as b:
+        b.page.goto("https://fantasy.premierleague.com/")
+        b._wait_for_token(10)
+        b.page.wait_for_timeout(600)   # the main tab is now away on the account site
+        for _ in range(3):
+            assert b.my_team(42)["transfers"]["bank"] == 11
+            b.page.wait_for_timeout(700)

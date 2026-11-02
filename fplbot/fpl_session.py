@@ -34,6 +34,7 @@ EMAIL_FIELDS = ['input[type="email"]', 'input[autocomplete="username"]', 'input[
 PASSWORD_FIELDS = ['input[type="password"]']
 SIGNUP_URL_HINTS = ("joinmypl", "/join", "register", "signup", "sign-up", "create-account")
 SIGNIN_HOST_HINT = "account.premierleague.com"
+WORKER_PATH = "/api/me/"   # small JSON address with no page scripts
 COOKIE_ACCEPT = ['#onetrust-accept-btn-handler', 'button:has-text("Accept All Cookies")', 'button:has-text("Accept all")']
 
 
@@ -76,6 +77,7 @@ class FplBrowser:
         self._auth: str | None = None   # x-api-authorization value, memory only
         self._csrf: str | None = None   # x-csrftoken value, memory only
         self._pw = self._ctx = self.page = None
+        self._worker = None   # quiet tab the bot sends its requests from
         self.login_layout: list[dict] = []   # sign-in page layouts seen (no values), for diagnosis
 
     # --- lifecycle -------------------------------------------------------
@@ -291,30 +293,35 @@ class FplBrowser:
         # Retrying a save is safe: each save sends the whole lineup, so sending it twice changes nothing.
         last = None
         for attempt in range(5):
-            page = self._site_page()
             try:
+                page = self._worker_page()
                 page.wait_for_load_state("load", timeout=15000)
                 result = page.evaluate(script, [self.site + path, method, headers, body])
                 return ApiResponse(result["status"], result["data"])
             except PwError as e:
-                # Navigations, reloads and frames swapping out all surface here; wait and retry.
+                if "closed" in str(e).lower():
+                    raise SessionError("the browser window was closed") from e
+                # A hiccup in the bot's own tab; reopen it and retry.
                 last = e
+                self._worker = None
                 log.info("request to %s interrupted (attempt %d): %s", path, attempt + 1, _short(e))
                 try:
-                    page.wait_for_timeout(1500 * (attempt + 1))
-                except PwError:
-                    pass
+                    self.page.wait_for_timeout(1500 * (attempt + 1))
+                except PwError as e2:
+                    raise SessionError("the browser window was closed") from e2
         raise SessionError(f"request to {path} failed in the browser: {_short(last)}") from last
 
-    def _site_page(self):
-        """A page currently on the FPL site (requests must come from it), preferring the main one."""
-        if API_HOST in self.page.url:
-            return self.page
-        for pg in self._ctx.pages:
-            if not pg.is_closed() and API_HOST in pg.url:
-                return pg
-        self.page.goto(self.site + "/", wait_until="domcontentloaded")
-        return self.page
+    def _worker_page(self):
+        """The bot's own tab, parked on a small FPL API address.
+
+        It has no scripts, so it never redirects, and it is on the FPL site, so
+        requests from it carry the site's cookies. The main tab is left alone to
+        sign in and refresh its login without the bot interrupting it.
+        """
+        if self._worker is None or self._worker.is_closed():
+            self._worker = self._ctx.new_page()
+            self._worker.goto(self.site + WORKER_PATH, wait_until="domcontentloaded")
+        return self._worker
 
     def get(self, path: str) -> ApiResponse:
         return self._fetch("GET", path)
