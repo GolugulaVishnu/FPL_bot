@@ -201,8 +201,9 @@ class FplBrowser:
         end = time.monotonic() + timeout
         while time.monotonic() < end:
             self.page.wait_for_timeout(500)
-            if SIGNIN_HOST_HINT in self.page.url:
-                self.snapshot_login_page()
+            for pg in list(self._ctx.pages):
+                if not pg.is_closed() and SIGNIN_HOST_HINT in pg.url:
+                    self.snapshot_login_page(pg)
             if self._auth:
                 entry = self._entry_if_logged_in(wait=5)
                 if entry:
@@ -213,12 +214,13 @@ class FplBrowser:
         u = self.page.url.lower()
         return any(k in u for k in SIGNUP_URL_HINTS)
 
-    def snapshot_login_page(self) -> None:
+    def snapshot_login_page(self, page=None) -> None:
         """Record the visible form layout of a sign-in page: field types and button labels, never values."""
-        if API_HOST in self.page.url:
+        page = page or self.page
+        if API_HOST in page.url:
             return
         try:
-            snap = self.page.evaluate(
+            snap = page.evaluate(
                 """() => {
                      const vis = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
                      const txt = el => (el.innerText || el.value || el.getAttribute("aria-label") || "").trim().slice(0, 40);
@@ -267,16 +269,39 @@ class FplBrowser:
                 raise SessionError("the site's save token (x-csrftoken) is not known yet; run: fplbot login --probe")
             headers["x-csrftoken"] = self._csrf
             headers["content-type"] = "application/json"
-        result = self.page.evaluate(
-            """async ([url, method, headers, body]) => {
+        from playwright.sync_api import Error as PwError
+        script = """async ([url, method, headers, body]) => {
                  const r = await fetch(url, {method, headers, credentials: "include",
                                              body: body === null ? undefined : JSON.stringify(body)});
                  let data = null;
                  try { data = await r.json(); } catch (e) {}
                  return {status: r.status, data};
-               }""",
-            [self.site + path, method, headers, body])
-        return ApiResponse(result["status"], result["data"])
+               }"""
+        # The site redirects after sign-in; a request started mid-navigation is lost, so wait and retry.
+        # Retrying a save is safe: each save sends the whole lineup, so sending it twice changes nothing.
+        last = None
+        for attempt in range(5):
+            page = self._site_page()
+            try:
+                page.wait_for_load_state("load", timeout=15000)
+                result = page.evaluate(script, [self.site + path, method, headers, body])
+                return ApiResponse(result["status"], result["data"])
+            except PwError as e:
+                last = e
+                if "context was destroyed" not in str(e) and "navigat" not in str(e).lower():
+                    raise SessionError(f"request to {path} failed in the browser") from e
+                page.wait_for_timeout(1500 * (attempt + 1))
+        raise SessionError(f"request to {path} kept being interrupted by page navigation") from last
+
+    def _site_page(self):
+        """A page currently on the FPL site (requests must come from it), preferring the main one."""
+        if API_HOST in self.page.url:
+            return self.page
+        for pg in self._ctx.pages:
+            if not pg.is_closed() and API_HOST in pg.url:
+                return pg
+        self.page.goto(self.site + "/", wait_until="domcontentloaded")
+        return self.page
 
     def get(self, path: str) -> ApiResponse:
         return self._fetch("GET", path)

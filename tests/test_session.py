@@ -11,7 +11,8 @@ CSRF = "csrf-abc-987"
 
 HOME = f"""<html><body><a href="https://account.premierleague.com/login">Log in</a><script>
 const q = new URLSearchParams(location.search);
-if (q.get("code")) {{ localStorage.setItem("tok", "{TOKEN}"); localStorage.setItem("csrf", "{CSRF}"); }}
+if (q.get("code")) {{ localStorage.setItem("tok", "{TOKEN}"); localStorage.setItem("csrf", "{CSRF}");
+  setTimeout(() => location.replace("/my-team"), 300); }}
 const tok = localStorage.getItem("tok");
 if (tok) fetch("/api/me/", {{headers: {{"x-api-authorization": tok}}}});
 window.siteSave = () => fetch("/api/my-team/42/", {{method: "POST",
@@ -123,3 +124,31 @@ def test_manual_sign_in_records_layout_without_values(browser_env):
         page = b.login_layout[0]
         assert {"type": "password"}.items() <= page["inputs"][1].items()
         assert any(btn["text"] == "Join MyPL" for btn in page["buttons"])
+
+
+def test_request_retries_when_page_navigates_mid_request():
+    pytest.importorskip("playwright")
+    from playwright.sync_api import Error as PwError
+    from fplbot.fpl_session import FplBrowser
+
+    class NavigatingPage:
+        url = "https://fantasy.premierleague.com/my-team"
+        calls = 0
+
+        def wait_for_load_state(self, *a, **k):
+            pass
+
+        def wait_for_timeout(self, ms):
+            pass
+
+        def evaluate(self, script, args):
+            NavigatingPage.calls += 1
+            if NavigatingPage.calls == 1:  # what the real site did right after sign-in
+                raise PwError("Page.evaluate: Execution context was destroyed, most likely because of a navigation")
+            return {"status": 200, "data": {"picks": [], "transfers": {"bank": 11}}}
+
+    b = FplBrowser(headless=True)
+    b.page = NavigatingPage()
+    b._auth = "Bearer test"
+    assert b.my_team(42)["transfers"]["bank"] == 11
+    assert NavigatingPage.calls == 2
