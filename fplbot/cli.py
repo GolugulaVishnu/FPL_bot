@@ -387,10 +387,19 @@ def cmd_login(args) -> int:
         names = {e["id"]: e["web_name"] for e in boot["elements"]}
     except (FplBlocked, FplError):
         names = {}
-    print("Opening the FPL site in a browser window and signing in. Nothing on the team is changed.")
+    if args.manual:
+        print("Opening the FPL site in a browser window. Sign in yourself there (the bot waits up to 10 minutes).")
+        print("The bot records the sign-in page's layout (field types and button labels, never what you type).")
+    else:
+        print("Opening the FPL site in a browser window and signing in. Nothing on the team is changed.")
+    b = None
     try:
         with FplBrowser(headless=args.headless) as b:
-            entry = b.login(cfg.fpl_email, password, wait_for_human=0 if args.headless else 300)
+            if args.manual:
+                entry = b.login_manually()
+            else:
+                entry = b.login(cfg.fpl_email, password, wait_for_human=0 if args.headless else 300)
+            _save_login_layout(b, args, [password, cfg.fpl_email])
             cfg.extra["entry"] = entry
             config_mod.save(cfg)
             team = b.my_team(entry)
@@ -430,8 +439,33 @@ def cmd_login(args) -> int:
         return 1
     except SessionError as e:
         print(f"Sign-in failed: {e}")
+        if b is not None:
+            _save_login_layout(b, args, [password, cfg.fpl_email])
         return 1
     return 0
+
+
+def _save_login_layout(b, args, secrets: list[str]) -> None:
+    """Save the sign-in page layouts seen (no values) so the automatic sign-in can be fixed or confirmed."""
+    import json as _json
+    from datetime import datetime, timezone
+    from .record.sanitize import leak_check, scrub
+    if not b.login_layout:
+        return
+    text = _json.dumps({"login_pages": scrub(b.login_layout)}, indent=1, ensure_ascii=False)
+    problems = leak_check(text, secrets)
+    if problems:
+        print("Sign-in page layout not saved: " + "; ".join(problems))
+        return
+    out = paths.REPO_ROOT / "recordings" / f"login-layout-{datetime.now(timezone.utc):%Y%m%d-%H%M%S}.json"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(text + "\n", encoding="utf-8")
+    print(f"Saved {out.relative_to(paths.REPO_ROOT)} (sign-in page layout, no values)")
+    if args.push:
+        try:
+            gitops.commit_and_push(paths.REPO_ROOT, [out], "Add sign-in page layout (no values)", secret_store.github_token())
+        except (gitops.GitError, secret_store.MissingSecret) as e:
+            print(f"Layout saved locally but not pushed: {e}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -495,6 +529,7 @@ def main(argv: list[str] | None = None) -> int:
     lg.add_argument("--probe", action="store_true", help="also find where the site keeps its save token (you save twice)")
     lg.add_argument("--push", action="store_true", help="commit and push the probe result")
     lg.add_argument("--headless", action="store_true", help="no visible window (scheduled runs)")
+    lg.add_argument("--manual", action="store_true", help="sign in yourself in the window; the bot just watches")
     lg.set_defaults(func=cmd_login)
 
     args = p.parse_args(argv)

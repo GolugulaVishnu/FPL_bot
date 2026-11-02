@@ -19,12 +19,20 @@ window.siteSave = () => fetch("/api/my-team/42/", {{method: "POST",
   body: JSON.stringify({{picks: [], chip: null}})}});
 </script></body></html>"""
 
-LOGIN = """<html><body><form onsubmit="event.preventDefault();
+LOGIN = """<html><body>
+<form action="https://account.premierleague.com/joinmypl" method="get"><button type="submit">Join MyPL</button></form>
+<form onsubmit="event.preventDefault();
   if (document.querySelector('#pw').value === 'right-password') location.href='https://fantasy.premierleague.com/?code=1';">
   <input type="email" id="em"><input type="password" id="pw"><button type="submit">Sign in</button></form>%s</body></html>"""
 
 
-def routes(captcha=False):
+AUTO_OWNER = """<script>setTimeout(() => {
+  document.querySelector('#em').value = 'owner@example.com';
+  document.querySelector('#pw').value = 'right-password';
+  document.querySelector('#pw').form.requestSubmit(); }, 3000);</script>"""
+
+
+def routes(captcha=False, owner_signs_in=False):
     def setup(context):
         def handle(route):
             req = route.request
@@ -43,9 +51,14 @@ def routes(captcha=False):
                 body = {"picks": [{"element": 1, "position": 1}], "chips": [],
                         "transfers": {"bank": 11, "limit": 1, "made": 0, "cost": 4, "status": "cost", "value": 989}}
             elif url.startswith("https://fantasy.premierleague.com"):
-                return route.fulfill(status=200, content_type="text/html", body=HOME)
+                owner_click = ('<script>if (!localStorage.getItem("tok") && !location.search) setTimeout(() => '
+                               'document.querySelector("a").click(), 1000);</script>') if owner_signs_in else ""
+                return route.fulfill(status=200, content_type="text/html", body=HOME + owner_click)
+            elif "joinmypl" in url:
+                return route.fulfill(status=200, content_type="text/html", body="<html><body>Join MyPL</body></html>")
             elif url.startswith("https://account.premierleague.com/login"):
                 frame = '<iframe src="https://challenges.cloudflare.com/x" width="300" height="300"></iframe>' if captcha else ""
+                frame += AUTO_OWNER if owner_signs_in else ""
                 return route.fulfill(status=200, content_type="text/html", body=LOGIN % frame)
             else:
                 return route.fulfill(status=200, content_type="text/html", body="<html></html>")
@@ -98,3 +111,15 @@ def test_save_needs_token_then_probe_finds_its_source(browser_env):
         assert probe["save_token_seen"] and "localStorage:csrf" in probe["where"]
         assert CSRF not in json.dumps(probe)  # names only, never values
         assert b.post("/api/my-team/42/", {"picks": []}).data == {"saved": True}
+
+
+def test_manual_sign_in_records_layout_without_values(browser_env):
+    from fplbot.fpl_session import FplBrowser
+    with FplBrowser(headless=True, profile=browser_env, setup=routes(owner_signs_in=True)) as b:
+        # The fake owner clicks "Log in" and signs in; the bot only watches.
+        assert b.login_manually(timeout=30) == 42
+        text = json.dumps(b.login_layout)
+        assert "right-password" not in text and "owner@example.com" not in text
+        page = b.login_layout[0]
+        assert {"type": "password"}.items() <= page["inputs"][1].items()
+        assert any(btn["text"] == "Join MyPL" for btn in page["buttons"])

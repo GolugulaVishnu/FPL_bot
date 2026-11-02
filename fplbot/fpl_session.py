@@ -32,8 +32,8 @@ LOGIN_LINKS = ['a:has-text("Log in")', 'button:has-text("Log in")', 'a:has-text(
 EMAIL_FIELDS = ['input[type="email"]', 'input[autocomplete="username"]', 'input[name*="email" i]',
                 'input[id*="email" i]', 'input[name*="user" i]']
 PASSWORD_FIELDS = ['input[type="password"]']
-SUBMIT_BUTTONS = ['button[type="submit"]', 'input[type="submit"]', 'button:has-text("Sign in")',
-                  'button:has-text("Log in")', 'button:has-text("Continue")', 'button:has-text("Next")']
+SIGNUP_URL_HINTS = ("joinmypl", "/join", "register", "signup", "sign-up", "create-account")
+SIGNIN_HOST_HINT = "account.premierleague.com"
 COOKIE_ACCEPT = ['#onetrust-accept-btn-handler', 'button:has-text("Accept All Cookies")', 'button:has-text("Accept all")']
 
 
@@ -70,6 +70,7 @@ class FplBrowser:
         self._auth: str | None = None   # x-api-authorization value, memory only
         self._csrf: str | None = None   # x-csrftoken value, memory only
         self._pw = self._ctx = self.page = None
+        self.login_layout: list[dict] = []   # sign-in page layouts seen (no values), for diagnosis
 
     # --- lifecycle -------------------------------------------------------
     def __enter__(self) -> "FplBrowser":
@@ -162,31 +163,82 @@ class FplBrowser:
         link.click()
         for _step in range(8):
             self.page.wait_for_timeout(2500)
+            self.snapshot_login_page()
+            if self._on_signup_page():
+                raise LoginFailed("sign-in went to the account sign-up page (Join MyPL) instead of signing in; "
+                                  "run 'fplbot login --manual' and sign in yourself once")
             if API_HOST in self.page.url and "/api/" not in self.page.url and self._wait_for_token(2):
                 break
             if self.human_check_visible():
                 self._handle_human_check(wait_for_human)
                 continue
-            filled = False
             em = self._first_visible(EMAIL_FIELDS)
+            pw = self._first_visible(PASSWORD_FIELDS)
             if em is not None and not em.input_value():
                 em.fill(email)
-                filled = True
-            pw = self._first_visible(PASSWORD_FIELDS)
             if pw is not None and not pw.input_value():
                 pw.fill(password)
-                filled = True
-            btn = self._first_visible(SUBMIT_BUTTONS)
-            if btn is not None and (filled or em is not None or pw is not None):
-                btn.click()
+            # Press Enter in the field so the form that holds it is the one submitted.
+            # Clicking buttons by label risks a "Join" or "Register" button.
+            field = pw or em
+            if field is not None:
+                field.press("Enter")
         entry = self._entry_if_logged_in(wait=20)
         if not entry:
             if self.human_check_visible():
                 self._handle_human_check(wait_for_human)
                 entry = self._entry_if_logged_in(wait=20)
             if not entry:
-                raise LoginFailed("signed in, but the FPL site did not confirm the team; check the password with: fplbot setup --reset")
+                raise LoginFailed("the FPL site did not confirm the sign-in; check the password with "
+                                  "'fplbot setup --reset', or run 'fplbot login --manual'")
         return entry
+
+    def login_manually(self, timeout: float = 600) -> int:
+        """Open the site and let the owner sign in by hand; the bot only watches and records the page layout."""
+        self.page.goto(self.site + "/", wait_until="domcontentloaded")
+        # One loop both records sign-in pages and notices when the site has signed in
+        # (straight away if the profile still remembers the session).
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            self.page.wait_for_timeout(500)
+            if SIGNIN_HOST_HINT in self.page.url:
+                self.snapshot_login_page()
+            if self._auth:
+                entry = self._entry_if_logged_in(wait=5)
+                if entry:
+                    return entry
+        raise LoginFailed("no sign-in seen in the window within 10 minutes")
+
+    def _on_signup_page(self) -> bool:
+        u = self.page.url.lower()
+        return any(k in u for k in SIGNUP_URL_HINTS)
+
+    def snapshot_login_page(self) -> None:
+        """Record the visible form layout of a sign-in page: field types and button labels, never values."""
+        if API_HOST in self.page.url:
+            return
+        try:
+            snap = self.page.evaluate(
+                """() => {
+                     const vis = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+                     const txt = el => (el.innerText || el.value || el.getAttribute("aria-label") || "").trim().slice(0, 40);
+                     return {
+                       page: location.host + location.pathname,
+                       title: document.title.slice(0, 80),
+                       inputs: [...document.querySelectorAll("input")].filter(vis).map(i => ({
+                         type: i.type, name: i.name, id: i.id, autocomplete: i.autocomplete,
+                         placeholder: (i.placeholder || "").slice(0, 40), in_form: !!i.form})),
+                       buttons: [...document.querySelectorAll("button, input[type=submit], [role=button]")].filter(vis)
+                         .map(b => ({tag: b.tagName.toLowerCase(), type: b.type || "", id: b.id, text: txt(b),
+                                     in_form_with_password: !!(b.form && b.form.querySelector("input[type=password]"))})),
+                       links: [...document.querySelectorAll("a")].filter(vis).map(txt)
+                         .filter(t => /join|sign|log|register|forgot|continue/i.test(t)).slice(0, 15),
+                     };
+                   }""")
+        except Exception:
+            return
+        if not self.login_layout or self.login_layout[-1] != snap:
+            self.login_layout.append(snap)
 
     def _handle_human_check(self, wait_for_human: float) -> None:
         if wait_for_human <= 0:
