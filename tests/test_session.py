@@ -152,3 +152,30 @@ def test_request_retries_when_page_navigates_mid_request():
     b._auth = "Bearer test"
     assert b.my_team(42)["transfers"]["bank"] == 11
     assert NavigatingPage.calls == 2
+
+
+def test_request_retries_other_browser_errors_and_reports_them():
+    pytest.importorskip("playwright")
+    from playwright.sync_api import Error as PwError
+    from fplbot.fpl_session import FplBrowser, SessionError
+
+    class FlakyPage:
+        url = "https://fantasy.premierleague.com/"
+
+        def wait_for_load_state(self, *a, **k):
+            pass
+
+        def wait_for_timeout(self, ms):
+            pass
+
+        def evaluate(self, script, args):
+            raise PwError("Page.evaluate: TypeError: Failed to fetch\nCall log: Bearer secret-xyz")
+
+    b = FplBrowser(headless=True)
+    b.page = FlakyPage()
+    b._auth = "Bearer secret-xyz"
+    from fplbot.logs import register_secret
+    register_secret("Bearer secret-xyz")
+    with pytest.raises(SessionError) as err:
+        b.get("/api/me/")
+    assert "Failed to fetch" in str(err.value) and "secret-xyz" not in str(err.value)

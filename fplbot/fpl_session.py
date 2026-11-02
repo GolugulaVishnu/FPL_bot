@@ -55,6 +55,12 @@ class ApiResponse:
     data: object
 
 
+def _short(e: Exception | None) -> str:
+    """First line of a browser error, with any registered secret removed."""
+    from .logs import scrub
+    return scrub(str(e).strip().splitlines()[0][:200]) if e else "unknown error"
+
+
 def profile_dir() -> Path:
     d = paths.data_dir() / "browser-profile"
     d.mkdir(parents=True, exist_ok=True)
@@ -205,7 +211,11 @@ class FplBrowser:
                 if not pg.is_closed() and SIGNIN_HOST_HINT in pg.url:
                     self.snapshot_login_page(pg)
             if self._auth:
-                entry = self._entry_if_logged_in(wait=5)
+                try:
+                    entry = self._entry_if_logged_in(wait=5)
+                except SessionError as e:
+                    log.info("sign-in check not ready yet: %s", e)
+                    entry = None
                 if entry:
                     return entry
         raise LoginFailed("no sign-in seen in the window within 10 minutes")
@@ -287,11 +297,14 @@ class FplBrowser:
                 result = page.evaluate(script, [self.site + path, method, headers, body])
                 return ApiResponse(result["status"], result["data"])
             except PwError as e:
+                # Navigations, reloads and frames swapping out all surface here; wait and retry.
                 last = e
-                if "context was destroyed" not in str(e) and "navigat" not in str(e).lower():
-                    raise SessionError(f"request to {path} failed in the browser") from e
-                page.wait_for_timeout(1500 * (attempt + 1))
-        raise SessionError(f"request to {path} kept being interrupted by page navigation") from last
+                log.info("request to %s interrupted (attempt %d): %s", path, attempt + 1, _short(e))
+                try:
+                    page.wait_for_timeout(1500 * (attempt + 1))
+                except PwError:
+                    pass
+        raise SessionError(f"request to {path} failed in the browser: {_short(last)}") from last
 
     def _site_page(self):
         """A page currently on the FPL site (requests must come from it), preferring the main one."""
