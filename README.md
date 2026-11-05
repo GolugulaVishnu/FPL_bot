@@ -58,6 +58,61 @@ Run these in **PowerShell**, one at a time.
    fplbot status
    ```
 
+## Running on a Mac instead
+
+Run these in **Terminal**, one at a time.
+
+1. Install the developer tools (includes git), then Python 3.12 or newer from python.org (macOS's built-in Python is too old):
+
+   ```bash
+   xcode-select --install
+   python3 --version
+   ```
+
+   If `python3 --version` shows lower than 3.12 after installing from python.org, use `python3.12` (or `python3.13`) wherever these steps say `python3`.
+
+2. Tell git who is committing, then clone the repo. When git asks for a password, use your GitHub token, not your GitHub password:
+
+   ```bash
+   git config --global user.name "FPL bot"
+   git config --global user.email "you@example.com"
+   git clone https://github.com/GolugulaVishnu/FPL_bot.git
+   cd FPL_bot
+   ```
+
+3. Create the bot's Python environment and install it, with the browser part:
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -e ".[record]"
+   python -m playwright install chromium
+   ```
+
+   Run `source .venv/bin/activate` again in every new Terminal window, from inside `FPL_bot`.
+
+4. Run setup. Type `primary` when asked for the role (the Mac is now the main machine). It saves the FPL password and GitHub token to the macOS Keychain and makes new ntfy topics: subscribe to the new **alerts** and **control** topics in the ntfy app. If macOS asks whether Python may use the Keychain, choose **Always Allow**, or scheduled runs can get stuck on that question.
+
+   ```bash
+   fplbot setup
+   ```
+
+5. Load the data, sign in once by hand (the sign-in is remembered on this Mac), and turn on the 15-minute schedule:
+
+   ```bash
+   fplbot data all
+   fplbot login --manual
+   fplbot schedule install
+   ```
+
+6. Keep the Mac awake: System Settings > Battery (or Energy) > turn on **Prevent automatic sleeping when the display is off** (on a laptop, the "on power adapter" version, and keep it plugged in). The Mac must stay logged in; a locked screen is fine.
+
+7. Turn the schedule off on the Windows machine so the two don't both run as the main machine. In PowerShell there, inside `FPL_bot` with `(.venv)` showing:
+
+   ```powershell
+   fplbot schedule remove
+   ```
+
 ## Data and model
 
 Run these after setup (inside `FPL_bot`, with `(.venv)` showing):
