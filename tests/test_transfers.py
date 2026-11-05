@@ -107,3 +107,23 @@ def test_hit_needs_the_bar_plus_4():
         _setall(o, m.xp_by_gw[9] + 6.0)            # +18 each: worth the hit
     two = squad.pick_squad(projs, G3, rules.DEFAULT, team_of, current=owned, bank=0, free_transfers=1)
     assert len(two.bought) == 2 and two.hits == 1
+
+
+def test_second_opinion_overrides_only_when_clearly_better():
+    from fplbot.plan import card
+    projs, team_of = pool3()
+    start = squad.pick_squad(projs, G3, rules.DEFAULT, team_of)
+    owned = _current(start)
+    weakest = min((p for p in start.xi if p.position == "MID"), key=lambda p: p.xp_by_gw[9])
+    star = next(p for p in projs if p.position == "MID" and p.element not in owned and p.price <= weakest.price)
+    _setall(star, weakest.xp_by_gw[9] + 3.0)    # +9 over 3 weeks: under the owner's 10-point bar
+    rule = squad.pick_squad(projs, G3, rules.DEFAULT, team_of, current=owned, bank=0, free_transfers=1)
+    alt = squad.pick_squad(projs, G3, rules.DEFAULT, team_of, current=owned, bank=0, free_transfers=1,
+                           gain_bar=squad.FT_VALUE)
+    assert rule.bought == [] and [p.element for p in alt.bought] == [star.element]
+    lines = " ".join(card.second_opinion_lines(rule, alt))
+    assert "OVERRIDES YOUR GUIDANCE" in lines      # ~+5 weighted after the 2-point FT value: over the 3-point margin
+    _setall(star, weakest.xp_by_gw[9] + 1.2)    # small gain: rules stand
+    alt2 = squad.pick_squad(projs, G3, rules.DEFAULT, team_of, current=owned, bank=0, free_transfers=1,
+                            gain_bar=squad.FT_VALUE)
+    assert "your rules stand" in " ".join(card.second_opinion_lines(rule, alt2)) or alt2.bought == []

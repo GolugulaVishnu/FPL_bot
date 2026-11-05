@@ -278,6 +278,7 @@ def cmd_pick(args) -> int:
     names = {e["id"]: e["web_name"] for e in boot["elements"]}
 
     state = None
+    opinion = None
     if not args.fresh:
         cfg = config_mod.load()
         entry = int(cfg.extra.get("entry") or TEAM_ENTRY)
@@ -297,6 +298,14 @@ def cmd_pick(args) -> int:
         sell = state.selling_prices(now_cost)
         plan = squad.pick_squad(projs, gws, rules, team_of, current=sell, bank=state.bank,
                                 free_transfers=state.free_transfers)
+        # Second opinion: the owner's rules are guidance. Plan for plain expected value too, and use it
+        # if it is clearly better, saying so on the card.
+        alt = squad.pick_squad(projs, gws, rules, team_of, current=sell, bank=state.bank,
+                               free_transfers=state.free_transfers, gain_bar=squad.FT_VALUE)
+        opinion = card.second_opinion_lines(plan, alt)
+        if ({p.element for p in alt.squad} != {p.element for p in plan.squad}
+                and alt.points_value - plan.points_value >= squad.OVERRIDE_MARGIN):
+            plan = alt
         prices = {p.element: sell.get(p.element, p.price) for p in plan.squad}
         budget = state.bank + sum(sell.values())
         available = state.chips_available(boot.get("chips", []), g0)
@@ -379,7 +388,8 @@ def cmd_pick(args) -> int:
                        model_version=_git_version(),
                        data_note=(f"snapshot {args.snapshot}" if args.snapshot else f"FPL API, read {now.strftime('%Y-%m-%d %H:%M UTC')}")
                                  + f"; {len(lives)} finished gameweeks loaded",
-                       team_name=TEAM_NAME if state is None else None, extra_notes=notes, ctx=ctx)
+                       team_name=TEAM_NAME if state is None else None, extra_notes=notes, ctx=ctx,
+                       opinion=opinion)
     out = card.card_path(paths.REPO_ROOT, season, g0, args.kind)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text, encoding="utf-8")

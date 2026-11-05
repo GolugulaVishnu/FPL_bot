@@ -45,6 +45,27 @@ def transfer_lines(plan: SquadPlan) -> list[str]:
     return lines
 
 
+def second_opinion_lines(rule_plan: SquadPlan, alt_plan: SquadPlan) -> list[str]:
+    """Compare the plan from the owner's transfer rules with a plain expected-value plan."""
+    from .squad import FT_VALUE, OVERRIDE_MARGIN
+    diff = (alt_plan.points_value or 0) - (rule_plan.points_value or 0)
+    moves = lambda p: (", ".join(f"{o.name} -> {i.name}" for o, i in zip(p.sold, p.bought)) or "no transfer") + \
+        (f", {p.hits} hit(s)" if p.hits else "")
+    same = {p.element for p in alt_plan.squad} == {p.element for p in rule_plan.squad}
+    lines = [f"  Owner's rules: {moves(rule_plan)}.",
+             f"  Plain expected value (a saved free transfer worth {FT_VALUE:.0f} pts): {moves(alt_plan)}."]
+    if same:
+        lines.append("  Both agree.")
+    elif diff >= OVERRIDE_MARGIN:
+        lines.append(f"  OVERRIDES YOUR GUIDANCE: the expected-value plan is {diff:.1f} weighted points better over the "
+                     f"horizon (bar to override: {OVERRIDE_MARGIN:.0f}), so it is the plan on this card. Review the "
+                     f"players' reasons below; if you disagree, tell Claude and the rule will be tightened.")
+    else:
+        lines.append(f"  The expected-value plan is only {diff:+.1f} weighted points different (bar to override: "
+                     f"{OVERRIDE_MARGIN:.0f}), so your rules stand.")
+    return lines
+
+
 def card_path(repo: Path, season: str, gw: int, kind: str) -> Path:
     return repo / "decision-cards" / season / f"gw{gw:02d}-{kind}.txt"
 
@@ -61,7 +82,7 @@ def _row(p: PlayerProjection, g0: int, opp: str, tag: str = "") -> str:
 def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime, plan: SquadPlan,
            chip: ChipDecision, all_projs: list[PlayerProjection], opponents: dict[int, str],
            budget: int, mode: str, model_version: str, data_note: str, team_name: str | None,
-           extra_notes: list[str] | None = None, ctx=None) -> str:
+           extra_notes: list[str] | None = None, ctx=None, opinion: list[str] | None = None) -> str:
     g0 = plan.gws[0]
     horizon = f"GW{plan.gws[0]}-{plan.gws[-1]}"
     cap_mult = 3 if chip.chip == "3xc" else 2
@@ -89,6 +110,10 @@ def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime
     if plan.free_transfers is not None:
         L.append("TRANSFERS")
         L.extend(transfer_lines(plan))
+        L.append("")
+    if opinion:
+        L.append("SECOND OPINION (owner's rules are guidance; the bot may override them and says so here)")
+        L.extend(opinion)
         L.append("")
     L.append("HOW THE SQUAD WAS BUILT")
     L.extend(squad_story(plan, all_projs, budget))

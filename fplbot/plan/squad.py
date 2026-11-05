@@ -29,6 +29,11 @@ HIT_COST = 4             # points per transfer beyond the free ones (rules file 
 # in which case any real upgrade will do.
 TRANSFER_GAIN_BAR = 10.0
 LONG_INJURY_WEEKS = 3
+# Second opinion (owner, 2026-11-05: the rules are guidance, the bot may do better and must say so):
+# a saved free transfer is valued at FT_VALUE points, and the plain-value plan replaces the rule-based
+# one only if it is at least OVERRIDE_MARGIN weighted points better.
+FT_VALUE = 2.0
+OVERRIDE_MARGIN = 3.0
 
 
 @dataclass
@@ -47,6 +52,7 @@ class SquadPlan:
     hits: int = 0
     free_transfers: int | None = None
     bank_after: int | None = None
+    points_value: float | None = None   # transfer mode: see pick_squad
 
     @property
     def xi_points_next(self) -> float:
@@ -70,7 +76,7 @@ def _shortlist(projs: list[PlayerProjection], weights: list[float], gws: list[in
 def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
                team_of: dict[int, int], budget: int | None = None,
                current: dict[int, int] | None = None, bank: int = 0,
-               free_transfers: int | None = None) -> SquadPlan:
+               free_transfers: int | None = None, gain_bar: float = TRANSFER_GAIN_BAR) -> SquadPlan:
     """Best squad, XI and captain over the horizon.
 
     `team_of`: element id -> team id (for the club limit).
@@ -124,9 +130,10 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
         # extra >= transfers - free; each extra costs a hit, each transfer must clear the minimum gain.
         add({**{i: 1 for i in new}, eidx: -1}, -np.inf, free_transfers)
         add({i: 1 for i in new}, 0, rules.transfer_cap)
+        base_obj = obj.copy()   # expected points only, before hits and the transfer bar
         obj[eidx] -= HIT_COST
         # The bar is in unweighted points over the horizon; the objective is weighted, so scale it.
-        bar = TRANSFER_GAIN_BAR * sum(weights) / len(weights)
+        bar = gain_bar * sum(weights) / len(weights)
         for i in new:
             obj[i] -= bar
         # Keeping a long-term absentee costs the bar, so selling him and buying a replacement nets out.
@@ -169,6 +176,10 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
     plan = SquadPlan(squad=sorted(squad, key=_pos_order), xi=sorted(xi, key=_pos_order), bench=gk + outfield,
                      captain=captain, vice=vice, gws=gws, objective=float(-res.fun),
                      cost=sum(cost_of[i] for i in range(n) if x[i]))
+    if transfer_mode:
+        # Comparable value across plans: weighted expected points, minus hits, minus free transfers spent.
+        spent = min(int(sum(x[i] for i in new)), free_transfers)
+        plan.points_value = float(base_obj @ x) - HIT_COST * int(x[eidx]) - FT_VALUE * spent
     if current is not None:
         ids = {p.element for p in squad}
         plan.sold = sorted((by_id[e] for e in current if e in by_id and e not in ids), key=_pos_order)
