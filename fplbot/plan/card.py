@@ -20,20 +20,22 @@ PART_LABELS = [("appearance", "app"), ("goals", "gls"), ("assists", "ast"), ("cl
 
 
 def transfer_lines(plan: SquadPlan) -> list[str]:
-    from .squad import GW_DECAY, HIT_COST, TRANSFER_MIN_GAIN
+    from .squad import GW_DECAY, HIT_COST, LONG_INJURY_WEEKS, TRANSFER_GAIN_BAR, long_term_out
     w = lambda p: sum(GW_DECAY ** i * p.xp_by_gw[g] for i, g in enumerate(plan.gws))
     used = len(plan.bought)
     lines = [f"  Free transfers: {plan.free_transfers}. Transfers made: {used}. "
              f"Hits: {plan.hits} ({-HIT_COST * plan.hits} pts). Bank after: {(plan.bank_after or 0) / 10:.1f}m."]
     if not used:
         best = sorted(plan.squad, key=w)[:3]
-        lines.append(f"  No transfer cleared the bar (at least {TRANSFER_MIN_GAIN:.1f} weighted xP over the horizon for a "
-                     f"free transfer, more than {HIT_COST} for a hit), so the free transfer is saved.")
+        lines.append(f"  No transfer cleared the bar (an incoming player at least {TRANSFER_GAIN_BAR:.0f} points better over "
+                     f"the horizon, or an owned player out for {LONG_INJURY_WEEKS}+ weeks; a hit needs {HIT_COST} more), "
+                     f"so the free transfer is saved for injuries, form dips and fixture swings.")
         lines.append("  Weakest squad players by weighted xP: " + ", ".join(f"{p.name} {w(p):.1f}" for p in best) + ".")
         return lines
     for out_p, in_p in zip(plan.sold, plan.bought):
+        why = "out long-term" if long_term_out(out_p, plan.gws) else f"gain over {TRANSFER_GAIN_BAR:.0f}-point bar"
         lines.append(f"  OUT {out_p.name} ({out_p.team}, {out_p.position}) {w(out_p):.1f} weighted xP"
-                     f"{'; ' + '; '.join(out_p.notes) if out_p.notes else ''}")
+                     f"{'; ' + '; '.join(out_p.notes) if out_p.notes else ''}  [{why}]")
         lines.append(f"  IN  {in_p.name} ({in_p.team}, {in_p.position}, {in_p.price / 10:.1f}m) {w(in_p):.1f} weighted xP"
                      f"  -> {w(in_p) - w(out_p):+.1f}")
     gain = sum(w(p) for p in plan.bought) - sum(w(p) for p in plan.sold)
@@ -147,6 +149,9 @@ def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime
     L.append("  Model: xG-based team strength, recent minutes, per-90 rates shrunk toward position averages.")
     L.append("  Backtest 2025-26: beats recent form (captain 6.2 vs 4.1 pts/GW); FPL's own projection was")
     L.append("  better on the 10 gameweeks where it could be compared (reports/backtest-2025-26.txt).")
+    L.append("  Not modelled yet, so check by eye before entering: teammate effects (a player's output with or")
+    L.append("  without a key teammate), midweek European and cup minutes (rotation risk), and price drops for")
+    L.append("  incoming players.")
     for n in extra_notes or []:
         L.append(f"  {n}")
     L.append("")

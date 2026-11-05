@@ -206,8 +206,9 @@ flowchart TD
 - If no Bench Boost week in the chip window reaches 14.5, use it in the highest week left before the window closes.
 - Short time out means 2 gameweeks or fewer.
 - Triple Captain when this week's best captain score is the highest projected for the rest of the chip window.
-- Pending owner approval (2026-11-05): Triple Captain also needs the captain to project at least 8 points, so the chip isn't spent on an ordinary week when projections are flat.
-- Pending owner approval (2026-11-05): a free transfer is used only if it gains at least 1 weighted xP over the horizon; otherwise it is saved. A hit (4 points) needs the gain to exceed 4 on top of that.
+- Owner's Triple Captain rule (2026-11-05): play it when the captain projects 8+ points, judging the rest of the chip window (to GW19) over owned players and players affordable with one transfer. A later week justifies holding only if it is clearly better (more than 1 point, the bot's margin).
+- Owner's transfer rules (2026-11-05): saving free transfers is the default (they cover later injuries, form dips and fixture swings without hits). A transfer is made when the incoming player projects 10+ points more over the 3-6 week horizon, or when the outgoing player is out long-term (no expected points in 3+ horizon weeks), in which case a smaller upgrade, even a bench one, is fine. Incoming players must be fully available. A hit needs the gain to beat 4 more.
+- Owner's rules not yet built (2026-11-05): after a Wildcard, hold transfers for 3-6 weeks unless injuries, a major form dip, a fixture swing or a key teammate's absence (e.g. Palmer and Rogers with or without João Pedro) changes a player's outlook; with saved transfers, short-term punts before a Wildcard are fine; use midweek European and cup minutes to judge league starts; avoid incoming players likely to lose value or whose cost blocks a later upgrade. Chips after GW19 (blanks and doubles) follow the owner's later instructions.
 - Wildcard when the unlimited-transfer squad beats the normal plan by 15 or more expected points over the horizon.
 - Free Hit for blank or double gameweeks when it gains 10 or more expected points for that week.
 - Order of checks when two chips qualify: Bench Boost, Triple Captain, Wildcard, Free Hit.

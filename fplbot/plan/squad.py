@@ -22,8 +22,13 @@ BENCH_WEIGHT = 0.1       # bench points count this much (auto-sub cover)
 SHORTLIST_PER_POS = 45   # best candidates per position kept for the solver
 CHEAP_PER_POS = 8        # plus the cheapest per position, as budget fillers
 HIT_COST = 4             # points per transfer beyond the free ones (rules file A5)
-# A free transfer must gain at least this much weighted xP, otherwise it is saved for next week.
-TRANSFER_MIN_GAIN = 1.0
+# Owner's rules (2026-11-05): saving free transfers is the default, because saved ones cover later
+# injuries, form dips and fixture swings without hits. A transfer is made when the incoming player
+# projects at least TRANSFER_GAIN_BAR more points over the horizon (unweighted total), or when the
+# outgoing player is out long-term (no expected points in LONG_INJURY_WEEKS of the horizon weeks),
+# in which case any real upgrade will do.
+TRANSFER_GAIN_BAR = 10.0
+LONG_INJURY_WEEKS = 3
 
 
 @dataclass
@@ -79,6 +84,8 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
     by_id = {p.element: p for p in projs}
     cands = [p for p in _shortlist(projs, weights, gws) if p.status != "u"]
     if current is not None:
+        # Incoming players must be fully available (owner's rule); owned players stay candidates whatever their status.
+        cands = [p for p in cands if p.status == "a" or p.element in current]
         have = {p.element for p in cands}
         cands += [by_id[e] for e in current if e in by_id and e not in have]
         budget = bank + sum(current.values())
@@ -118,8 +125,14 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
         add({**{i: 1 for i in new}, eidx: -1}, -np.inf, free_transfers)
         add({i: 1 for i in new}, 0, rules.transfer_cap)
         obj[eidx] -= HIT_COST
+        # The bar is in unweighted points over the horizon; the objective is weighted, so scale it.
+        bar = TRANSFER_GAIN_BAR * sum(weights) / len(weights)
         for i in new:
-            obj[i] -= TRANSFER_MIN_GAIN
+            obj[i] -= bar
+        # Keeping a long-term absentee costs the bar, so selling him and buying a replacement nets out.
+        for i, p in enumerate(cands):
+            if p.element in current and long_term_out(p, gws):
+                obj[i] -= bar
     for pos, cnt in rules.squad_count.items():
         add({i: 1 for i, p in enumerate(cands) if p.position == pos}, cnt, cnt)
     for team in set(team_of[p.element] for p in cands):
@@ -164,6 +177,11 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
         plan.free_transfers = free_transfers
         plan.bank_after = budget - plan.cost
     return plan
+
+
+def long_term_out(p: PlayerProjection, gws: list[int]) -> bool:
+    """Not available and no expected points in at least LONG_INJURY_WEEKS of the horizon weeks."""
+    return p.status != "a" and sum(1 for g in gws if p.xp_by_gw.get(g, 0.0) < 0.5) >= LONG_INJURY_WEEKS
 
 
 def choose_captains(xi: list[PlayerProjection], gw: int) -> tuple[PlayerProjection, PlayerProjection]:

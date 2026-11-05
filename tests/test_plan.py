@@ -55,8 +55,10 @@ def test_chip_rules():
         p.xp_by_gw[9] = 0.5
     d2 = chips.decide(plan, {"bboost", "3xc"}, first_gameweek=True)
     assert d2.chip == "3xc"  # 12-point captain, best week ahead: Triple Captain qualifies
-    d3 = chips.decide(plan, {"3xc"}, first_gameweek=False, best_later_captain=(13.0, 15))
-    assert d3.chip is None   # a better week is coming in the chip window
+    d3 = chips.decide(plan, {"3xc"}, first_gameweek=False, best_later_captain=(13.5, 15))
+    assert d3.chip is None   # a clearly better week (by more than 1 point) is coming in the chip window
+    d3b = chips.decide(plan, {"3xc"}, first_gameweek=False, best_later_captain=(12.8, 15, "X"))
+    assert d3b.chip == "3xc"  # a later week only slightly better: play now
     plan.captain.xp_by_gw[9] = 6.5
     d4 = chips.decide(plan, {"3xc"}, first_gameweek=False, best_later_captain=(6.0, 15))
     assert d4.chip is None and any("floor" in line for line in d4.lines)

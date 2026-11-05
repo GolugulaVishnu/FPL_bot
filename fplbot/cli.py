@@ -320,9 +320,16 @@ def cmd_pick(args) -> int:
             long_gws, long_projs = project_upcoming(ds, boot, fx, now, stop - g0 + 1)
         else:
             long_gws, long_projs = gws, projs
+        # Owned players, plus anyone affordable with one transfer (bank + selling the priciest owned player in his position).
         owned = {p.element for p in plan.squad}
-        later = [(p.xp_by_gw[g], g) for p in long_projs if p.element in owned for g in long_gws[1:]]
-        best_later = max(later) if later else (0.0, g0)
+        spend = {}
+        for p in plan.squad:
+            spend[p.position] = max(spend.get(p.position, 0), prices[p.element])
+        bank_now = budget - plan.cost
+        pool = [p for p in long_projs if p.element in owned
+                or (p.status == "a" and p.price <= spend.get(p.position, 0) + bank_now)]
+        later = [(p.xp_by_gw[g], g, p.name) for p in pool for g in long_gws[1:]]
+        best_later = max(later) if later else (0.0, g0, "")
     decision = chips.decide(plan, available, first_gameweek=first_gw, best_later_captain=best_later)
 
     short = {t["id"]: t["short_name"] for t in boot["teams"]}
@@ -352,7 +359,8 @@ def cmd_pick(args) -> int:
     else:
         mode = (f"Transfers from the current squad (after GW{state.last_gw}): {state.free_transfers} free transfer(s), "
                 f"bank {state.bank / 10:.1f}m. Hits cost {squad.HIT_COST} pts each; a free transfer is only used if it "
-                f"gains at least {squad.TRANSFER_MIN_GAIN:.1f} weighted xP, otherwise it is saved.")
+                f"gains at least {squad.TRANSFER_GAIN_BAR:.0f} points over the horizon or replaces a long-term absentee; "
+                f"otherwise it is saved.")
         steps = ["", "HOW THIS GAMEWEEK GETS ENTERED",
                  "  The bot cannot submit yet, so make these changes on the FPL site by hand:"]
         n = 1
