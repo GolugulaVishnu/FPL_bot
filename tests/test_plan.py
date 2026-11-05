@@ -54,7 +54,12 @@ def test_chip_rules():
     for p in plan.bench:
         p.xp_by_gw[9] = 0.5
     d2 = chips.decide(plan, {"bboost", "3xc"}, first_gameweek=True)
-    assert d2.chip == "3xc"  # captain's week equals the best later week, so Triple Captain qualifies
+    assert d2.chip == "3xc"  # 12-point captain, best week ahead: Triple Captain qualifies
+    d3 = chips.decide(plan, {"3xc"}, first_gameweek=False, best_later_captain=(13.0, 15))
+    assert d3.chip is None   # a better week is coming in the chip window
+    plan.captain.xp_by_gw[9] = 6.5
+    d4 = chips.decide(plan, {"3xc"}, first_gameweek=False, best_later_captain=(6.0, 15))
+    assert d4.chip is None and any("floor" in line for line in d4.lines)
 
 
 def test_card_explains_every_player():

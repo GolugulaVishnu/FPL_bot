@@ -103,7 +103,11 @@ class FplBrowser:
     def _capture_headers(self, request) -> None:
         if API_HOST not in request.url or "/api/" not in request.url:
             return
-        h = {k.lower(): v for k, v in request.headers.items()}
+        try:
+            raw = request.all_headers()   # .headers can leave some headers out
+        except Exception:
+            raw = request.headers
+        h = {k.lower(): v for k, v in raw.items()}
         if h.get("x-api-authorization"):
             self._auth = h["x-api-authorization"]
             register_secret(self._auth)

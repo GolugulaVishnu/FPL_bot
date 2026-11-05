@@ -8,7 +8,7 @@ are chosen from the squad and the bench counts a little (it covers auto-subs).
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
@@ -21,6 +21,9 @@ GW_DECAY = 0.85          # weight of each later gameweek relative to the one bef
 BENCH_WEIGHT = 0.1       # bench points count this much (auto-sub cover)
 SHORTLIST_PER_POS = 45   # best candidates per position kept for the solver
 CHEAP_PER_POS = 8        # plus the cheapest per position, as budget fillers
+HIT_COST = 4             # points per transfer beyond the free ones (rules file A5)
+# A free transfer must gain at least this much weighted xP, otherwise it is saved for next week.
+TRANSFER_MIN_GAIN = 1.0
 
 
 @dataclass
@@ -33,6 +36,12 @@ class SquadPlan:
     gws: list[int]
     objective: float
     cost: int
+    # Transfer mode only: players sold and bought, and the hit taken.
+    sold: list[PlayerProjection] = field(default_factory=list)
+    bought: list[PlayerProjection] = field(default_factory=list)
+    hits: int = 0
+    free_transfers: int | None = None
+    bank_after: int | None = None
 
     @property
     def xi_points_next(self) -> float:
@@ -54,15 +63,32 @@ def _shortlist(projs: list[PlayerProjection], weights: list[float], gws: list[in
 
 
 def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
-               team_of: dict[int, int], budget: int | None = None) -> SquadPlan:
-    """`team_of`: element id -> team id (for the club limit)."""
-    budget = rules.budget if budget is None else budget
+               team_of: dict[int, int], budget: int | None = None,
+               current: dict[int, int] | None = None, bank: int = 0,
+               free_transfers: int | None = None) -> SquadPlan:
+    """Best squad, XI and captain over the horizon.
+
+    `team_of`: element id -> team id (for the club limit).
+    Transfer mode: `current` maps the owned players' element ids to their selling
+    prices, `bank` is money in the bank and `free_transfers` the free transfers
+    available (None = unlimited). Owned players are valued at their selling price,
+    new ones at today's price, and each transfer beyond the free ones costs
+    HIT_COST points.
+    """
     weights = [GW_DECAY ** i for i in range(len(gws))]
+    by_id = {p.element: p for p in projs}
     cands = [p for p in _shortlist(projs, weights, gws) if p.status != "u"]
+    if current is not None:
+        have = {p.element for p in cands}
+        cands += [by_id[e] for e in current if e in by_id and e not in have]
+        budget = bank + sum(current.values())
+    budget = rules.budget if budget is None else budget
     n, G = len(cands), len(gws)
-    # Variable layout: x[p], then s[p, g] (starter), then c[p, g] (captain).
+    # Variable layout: x[p], then s[p, g] (starter), then c[p, g] (captain), then (transfer mode) extra transfers.
     nx, ns = n, n * G
-    nv = nx + 2 * ns
+    transfer_mode = current is not None and free_transfers is not None
+    nv = nx + 2 * ns + (1 if transfer_mode else 0)
+    eidx = nx + 2 * ns
     sidx = lambda i, g: nx + i * G + g
     cidx = lambda i, g: nx + ns + i * G + g
 
@@ -84,7 +110,16 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
         lo.append(lower)
         hi.append(upper)
 
-    add({i: p.price for i, p in enumerate(cands)}, 0, budget)
+    cost_of = {i: (current[p.element] if current and p.element in current else p.price) for i, p in enumerate(cands)}
+    add(cost_of, 0, budget)
+    if transfer_mode:
+        new = [i for i, p in enumerate(cands) if p.element not in current]
+        # extra >= transfers - free; each extra costs a hit, each transfer must clear the minimum gain.
+        add({**{i: 1 for i in new}, eidx: -1}, -np.inf, free_transfers)
+        add({i: 1 for i in new}, 0, rules.transfer_cap)
+        obj[eidx] -= HIT_COST
+        for i in new:
+            obj[i] -= TRANSFER_MIN_GAIN
     for pos, cnt in rules.squad_count.items():
         add({i: 1 for i, p in enumerate(cands) if p.position == pos}, cnt, cnt)
     for team in set(team_of[p.element] for p in cands):
@@ -99,8 +134,11 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
             add({cidx(i, g): 1, sidx(i, g): -1}, -np.inf, 0)
 
     a = coo_matrix((vals, (ri, ci)), shape=(len(lo), nv)).tocsr()
+    upper = np.ones(nv)
+    if transfer_mode:
+        upper[eidx] = rules.squad_size
     res = milp(-obj, constraints=LinearConstraint(a, lo, hi),
-               integrality=np.ones(nv), bounds=Bounds(0, 1), options={"time_limit": 120})
+               integrality=np.ones(nv), bounds=Bounds(0, upper), options={"time_limit": 120})
     if res.x is None:
         raise RuntimeError(f"squad optimiser found no solution: {res.message}")
     x = np.round(res.x).astype(int)
@@ -115,9 +153,17 @@ def pick_squad(projs: list[PlayerProjection], gws: list[int], rules: SquadRules,
     outfield = sorted((p for p in bench_rest if p.position != "GKP"),
                       key=lambda p: (round(p.minutes_next / 30), p.xp_by_gw[g0]), reverse=True)
     captain, vice = choose_captains(xi, g0)
-    return SquadPlan(squad=sorted(squad, key=_pos_order), xi=sorted(xi, key=_pos_order), bench=gk + outfield,
+    plan = SquadPlan(squad=sorted(squad, key=_pos_order), xi=sorted(xi, key=_pos_order), bench=gk + outfield,
                      captain=captain, vice=vice, gws=gws, objective=float(-res.fun),
-                     cost=sum(p.price for p in squad))
+                     cost=sum(cost_of[i] for i in range(n) if x[i]))
+    if current is not None:
+        ids = {p.element for p in squad}
+        plan.sold = sorted((by_id[e] for e in current if e in by_id and e not in ids), key=_pos_order)
+        plan.bought = sorted((p for p in squad if p.element not in current), key=_pos_order)
+        plan.hits = int(x[eidx]) if transfer_mode else 0
+        plan.free_transfers = free_transfers
+        plan.bank_after = budget - plan.cost
+    return plan
 
 
 def choose_captains(xi: list[PlayerProjection], gw: int) -> tuple[PlayerProjection, PlayerProjection]:

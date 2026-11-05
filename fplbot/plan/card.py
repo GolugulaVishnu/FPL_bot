@@ -19,6 +19,30 @@ PART_LABELS = [("appearance", "app"), ("goals", "gls"), ("assists", "ast"), ("cl
                ("bonus", "bon"), ("cards", "crd")]
 
 
+def transfer_lines(plan: SquadPlan) -> list[str]:
+    from .squad import GW_DECAY, HIT_COST, TRANSFER_MIN_GAIN
+    w = lambda p: sum(GW_DECAY ** i * p.xp_by_gw[g] for i, g in enumerate(plan.gws))
+    used = len(plan.bought)
+    lines = [f"  Free transfers: {plan.free_transfers}. Transfers made: {used}. "
+             f"Hits: {plan.hits} ({-HIT_COST * plan.hits} pts). Bank after: {(plan.bank_after or 0) / 10:.1f}m."]
+    if not used:
+        best = sorted(plan.squad, key=w)[:3]
+        lines.append(f"  No transfer cleared the bar (at least {TRANSFER_MIN_GAIN:.1f} weighted xP over the horizon for a "
+                     f"free transfer, more than {HIT_COST} for a hit), so the free transfer is saved.")
+        lines.append("  Weakest squad players by weighted xP: " + ", ".join(f"{p.name} {w(p):.1f}" for p in best) + ".")
+        return lines
+    for out_p, in_p in zip(plan.sold, plan.bought):
+        lines.append(f"  OUT {out_p.name} ({out_p.team}, {out_p.position}) {w(out_p):.1f} weighted xP"
+                     f"{'; ' + '; '.join(out_p.notes) if out_p.notes else ''}")
+        lines.append(f"  IN  {in_p.name} ({in_p.team}, {in_p.position}, {in_p.price / 10:.1f}m) {w(in_p):.1f} weighted xP"
+                     f"  -> {w(in_p) - w(out_p):+.1f}")
+    gain = sum(w(p) for p in plan.bought) - sum(w(p) for p in plan.sold)
+    lines.append(f"  Net: {gain:+.1f} weighted xP over the horizon before hits, {gain - HIT_COST * plan.hits:+.1f} after.")
+    lines.append("  Pairs are listed in position order; the optimiser chooses the whole squad at once, so the gain is "
+                 "for the set of moves together.")
+    return lines
+
+
 def card_path(repo: Path, season: str, gw: int, kind: str) -> Path:
     return repo / "decision-cards" / season / f"gw{gw:02d}-{kind}.txt"
 
@@ -60,6 +84,10 @@ def render(*, season: str, gw: int, kind: str, deadline: datetime, now: datetime
     L.append(f"  Projected points GW{g0}: {xi_pts:.1f} (incl. captain{' and bench' if chip.chip == 'bboost' else ''})")
     L.append(f"  Planning horizon {horizon}, later weeks weighted less (x0.85 per week)")
     L.append("")
+    if plan.free_transfers is not None:
+        L.append("TRANSFERS")
+        L.extend(transfer_lines(plan))
+        L.append("")
     L.append("HOW THE SQUAD WAS BUILT")
     L.extend(squad_story(plan, all_projs, budget))
     L.append("")

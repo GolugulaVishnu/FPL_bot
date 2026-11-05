@@ -16,6 +16,8 @@ class SquadRules:
     squad_count: dict[str, int]      # GKP 2, DEF 5, MID 5, FWD 3
     xi_min: dict[str, int]
     xi_max: dict[str, int]
+    transfer_cap: int = 20           # max transfers in a gameweek without Wildcard/Free Hit
+    max_free_transfers: int = 5      # 1 + max_extra_free_transfers
 
 
 DEFAULT = SquadRules(1000, 3, 15, 11, {"GKP": 2, "DEF": 5, "MID": 5, "FWD": 3},
@@ -36,6 +38,8 @@ def from_bootstrap(bootstrap: dict) -> SquadRules:
         squad_count={pos[e["id"]]: e["squad_select"] for e in ets},
         xi_min={pos[e["id"]]: e["squad_min_play"] for e in ets},
         xi_max={pos[e["id"]]: e["squad_max_play"] for e in ets},
+        transfer_cap=gs.get("transfers_cap", DEFAULT.transfer_cap),
+        max_free_transfers=1 + gs.get("max_extra_free_transfers", DEFAULT.max_free_transfers - 1),
     )
 
 

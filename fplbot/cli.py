@@ -243,9 +243,16 @@ def _git_version() -> str:
     return r.stdout.strip() or "unknown"
 
 
+TEAM_ENTRY = 11204042   # the team created on 30 Oct 2026 (also saved by 'fplbot login')
+
+
 def cmd_pick(args) -> int:
-    """Build this gameweek's team and decision card. Submission to FPL is not automated yet."""
+    """Build this gameweek's team and decision card. Submission to FPL is not automated yet.
+
+    With a team that has played, it plans transfers from the current squad; otherwise it picks a fresh 15.
+    """
     from datetime import datetime, timezone
+    from . import team as team_mod
     from .data import load_current
     from .datastore import DataStore
     from .model.project import project_with_context
@@ -267,17 +274,56 @@ def cmd_pick(args) -> int:
     g0 = gws[0]
     rules = squad_rules.from_bootstrap(boot)
     team_of = {e["id"]: e["team"] for e in boot["elements"]}
-    plan = squad.pick_squad(projs, gws, rules, team_of)
+    now_cost = {e["id"]: e["now_cost"] for e in boot["elements"]}
+    names = {e["id"]: e["web_name"] for e in boot["elements"]}
 
-    squad_dicts = [dict(element=p.element, position=p.position, team=team_of[p.element], price=p.price) for p in plan.squad]
+    state = None
+    if not args.fresh:
+        cfg = config_mod.load()
+        entry = int(cfg.extra.get("entry") or TEAM_ENTRY)
+        try:
+            state = team_mod.fetch(FplPublicClient(paths.cache_dir()), entry, paths.REPO_ROOT, rules.max_free_transfers)
+        except (FplBlocked, FplError) as e:
+            print(f"Could not read the team from FPL: {e}")
+            return 1
+
+    if state is None:
+        plan = squad.pick_squad(projs, gws, rules, team_of)
+        prices = {p.element: p.price for p in plan.squad}
+        budget = rules.budget
+        available = {c["name"] for c in boot.get("chips", []) if c.get("start_event", 0) <= g0 <= c.get("stop_event", 38)}
+        first_gw = True
+    else:
+        sell = state.selling_prices(now_cost)
+        plan = squad.pick_squad(projs, gws, rules, team_of, current=sell, bank=state.bank,
+                                free_transfers=state.free_transfers)
+        prices = {p.element: sell.get(p.element, p.price) for p in plan.squad}
+        budget = state.bank + sum(sell.values())
+        available = state.chips_available(boot.get("chips", []), g0)
+        first_gw = False
+
+    squad_dicts = [dict(element=p.element, position=p.position, team=team_of[p.element], price=prices[p.element])
+                   for p in plan.squad]
     errors = squad_rules.validate(rules, squad_dicts, [p.element for p in plan.xi], [p.element for p in plan.bench],
-                                  plan.captain.element, plan.vice.element)
+                                  plan.captain.element, plan.vice.element, budget=budget)
     if errors:
         print("The picked team breaks the rules, so no card was written:\n  " + "\n  ".join(errors))
         return 1
 
-    available = {c["name"] for c in boot.get("chips", []) if c.get("start_event", 0) <= g0 <= c.get("stop_event", 38)}
-    decision = chips.decide(plan, available, first_gameweek=True)
+    best_later = None
+    if "3xc" in available:
+        # The approved rule compares with the rest of the Triple Captain window, not just the planning horizon.
+        stop = next((c["stop_event"] for c in boot.get("chips", [])
+                     if c["name"] == "3xc" and c.get("start_event", 1) <= g0 <= c.get("stop_event", 38)), g0)
+        if stop > gws[-1]:
+            from .model.project import project_upcoming
+            long_gws, long_projs = project_upcoming(ds, boot, fx, now, stop - g0 + 1)
+        else:
+            long_gws, long_projs = gws, projs
+        owned = {p.element for p in plan.squad}
+        later = [(p.xp_by_gw[g], g) for p in long_projs if p.element in owned for g in long_gws[1:]]
+        best_later = max(later) if later else (0.0, g0)
+    decision = chips.decide(plan, available, first_gameweek=first_gw, best_later_captain=best_later)
 
     short = {t["id"]: t["short_name"] for t in boot["teams"]}
     opponents: dict[int, str] = {}
@@ -292,32 +338,57 @@ def cmd_pick(args) -> int:
 
     deadline = next(datetime.fromisoformat(e["deadline_time"].replace("Z", "+00:00")) for e in boot["events"] if e["id"] == g0)
     season = season_label(boot)
-    notes = [
-        "",
-        "HOW THIS GAMEWEEK GETS ENTERED",
-        "  The bot cannot log in and submit yet, so enter this team on the FPL site by hand:",
-        f"  1. Pick Team: add the 15 players above (budget {rules.budget / 10:.1f}m).",
-        f"  2. Team name: {TEAM_NAME}. Favourite club: none.",
-        "  3. Starting XI and bench order exactly as above; set captain (C) and vice (V).",
-        f"  4. Chip: {card.CHIP_NAMES[decision.chip]}" + (" (activate it on the Pick Team page before saving)." if decision.chip else "."),
-        f"  5. Save before {deadline.strftime('%a %d %b %H:%M UTC')}.",
-    ]
+    chip_line = f"Chip: {card.CHIP_NAMES[decision.chip]}" + (" (activate it on the Pick Team page before saving)."
+                                                            if decision.chip else ".")
+    if state is None:
+        mode = ("Initial squad: the team has no players yet, so all 15 are picked freely "
+                "(unlimited transfers before the team's first deadline).")
+        notes = ["", "HOW THIS GAMEWEEK GETS ENTERED",
+                 "  The bot cannot log in and submit yet, so enter this team on the FPL site by hand:",
+                 f"  1. Pick Team: add the 15 players above (budget {rules.budget / 10:.1f}m).",
+                 f"  2. Team name: {TEAM_NAME}. Favourite club: none.",
+                 "  3. Starting XI and bench order exactly as above; set captain (C) and vice (V).",
+                 f"  4. {chip_line}", f"  5. Save before {deadline.strftime('%a %d %b %H:%M UTC')}."]
+    else:
+        mode = (f"Transfers from the current squad (after GW{state.last_gw}): {state.free_transfers} free transfer(s), "
+                f"bank {state.bank / 10:.1f}m. Hits cost {squad.HIT_COST} pts each; a free transfer is only used if it "
+                f"gains at least {squad.TRANSFER_MIN_GAIN:.1f} weighted xP, otherwise it is saved.")
+        steps = ["", "HOW THIS GAMEWEEK GETS ENTERED",
+                 "  The bot cannot submit yet, so make these changes on the FPL site by hand:"]
+        n = 1
+        if plan.bought:
+            steps.append(f"  {n}. Transfers: sell " + ", ".join(p.name for p in plan.sold) + "; buy "
+                         + ", ".join(p.name for p in plan.bought) + ". Confirm the transfers.")
+            n += 1
+        else:
+            steps.append(f"  {n}. No transfers this week (the free transfer is saved).")
+            n += 1
+        steps += [f"  {n}. Pick Team: starting XI and bench order exactly as above; set captain (C) and vice (V).",
+                  f"  {n + 1}. {chip_line}", f"  {n + 2}. Save before {deadline.strftime('%a %d %b %H:%M UTC')}."]
+        notes = steps + state.notes
     text = card.render(season=season, gw=g0, kind=args.kind, deadline=deadline, now=now, plan=plan, chip=decision,
-                       all_projs=projs, opponents=opponents, budget=rules.budget,
-                       mode="Initial squad: the team has no players yet, so all 15 are picked freely "
-                            "(unlimited transfers before the team's first deadline).",
+                       all_projs=projs, opponents=opponents, budget=budget, mode=mode,
                        model_version=_git_version(),
                        data_note=(f"snapshot {args.snapshot}" if args.snapshot else f"FPL API, read {now.strftime('%Y-%m-%d %H:%M UTC')}")
                                  + f"; {len(lives)} finished gameweeks loaded",
-                       team_name=TEAM_NAME, extra_notes=notes, ctx=ctx)
+                       team_name=TEAM_NAME if state is None else None, extra_notes=notes, ctx=ctx)
     out = card.card_path(paths.REPO_ROOT, season, g0, args.kind)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text, encoding="utf-8")
+    files = [out]
+    if state is not None and plan.bought and args.kind == "final":
+        # Record what the new players cost, so later selling prices are right.
+        purchases = dict(state.purchases)
+        for p in plan.sold:
+            purchases.pop(p.element, None)
+        for p in plan.bought:
+            purchases[p.element] = now_cost[p.element]
+        files.append(team_mod.save_purchases(paths.REPO_ROOT, purchases))
     print(text)
     print(f"Saved {out.relative_to(paths.REPO_ROOT)}")
     if args.push:
         try:
-            gitops.commit_and_push(paths.REPO_ROOT, [out], f"Decision card {season} GW{g0} ({args.kind})",
+            gitops.commit_and_push(paths.REPO_ROOT, files, f"Decision card {season} GW{g0} ({args.kind})",
                                    secret_store.github_token())
             print("Committed and pushed.")
         except (gitops.GitError, secret_store.MissingSecret) as e:
@@ -519,6 +590,7 @@ def main(argv: list[str] | None = None) -> int:
     pk.add_argument("--push", action="store_true", help="commit and push the decision card")
     pk.add_argument("--snapshot", help="use a samples/ folder instead of the live API ('latest' for the newest)")
     pk.add_argument("--at", help="pretend it is this UTC time (testing)")
+    pk.add_argument("--fresh", action="store_true", help="ignore the current team and pick a fresh 15")
     pk.set_defaults(func=cmd_pick)
 
     rc = sub.add_parser("record", help="log in and save the team in a browser while the bot records how the site does it")

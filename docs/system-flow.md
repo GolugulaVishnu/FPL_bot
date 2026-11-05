@@ -206,6 +206,8 @@ flowchart TD
 - If no Bench Boost week in the chip window reaches 14.5, use it in the highest week left before the window closes.
 - Short time out means 2 gameweeks or fewer.
 - Triple Captain when this week's best captain score is the highest projected for the rest of the chip window.
+- Pending owner approval (2026-11-05): Triple Captain also needs the captain to project at least 8 points, so the chip isn't spent on an ordinary week when projections are flat.
+- Pending owner approval (2026-11-05): a free transfer is used only if it gains at least 1 weighted xP over the horizon; otherwise it is saved. A hit (4 points) needs the gain to exceed 4 on top of that.
 - Wildcard when the unlimited-transfer squad beats the normal plan by 15 or more expected points over the horizon.
 - Free Hit for blank or double gameweeks when it gains 10 or more expected points for that week.
 - Order of checks when two chips qualify: Bench Boost, Triple Captain, Wildcard, Free Hit.
