@@ -1,9 +1,9 @@
 FPL BOT DECISION CARD | 2026-27 GW10 | FINAL
 ==============================================================================
-Generated:  2026-11-05 20:29 UTC  (model 481e52f)
+Generated:  2026-11-06 04:22 UTC  (model ec52b6e)
 Deadline:   Fri 06 Nov 2026 18:30 UTC  (from the FPL API)
 Mode:       Transfers from the current squad (after GW9): 1 free transfer(s), bank 1.1m. Hits cost 4 pts each; a free transfer is only used if it gains at least 10 points over the horizon or replaces a long-term absentee; otherwise it is saved.
-Data:       FPL API, read 2026-11-05 20:29 UTC; 9 finished gameweeks loaded
+Data:       FPL API, read 2026-11-06 04:22 UTC; 9 finished gameweeks loaded
 
 SUMMARY
   Squad cost 99.0m of 100.1m, bank 1.1m
@@ -26,12 +26,12 @@ HOW THE SQUAD WAS BUILT
   1. Goal: the most expected points over GW10-15, nearer weeks counting more, within 100.1m, 2/5/5/3 and max 3 per club.
   2. Highest projected players over the horizon: Haaland 33.0, Gabriel 31.9, Mbeumo 29.6, Van Hecke 28.1, Tavernier 28.0.
   3. Biggest spend: Haaland at 15.8m (33.0 xP over the horizon). That leaves 84.3m for the other 14, about 6.0m each.
-  4. Money by position: GKP 11.2m, DEF 29.0m, MID 31.8m, FWD 27.5m.
+  4. Money by position: GKP 11.2m, DEF 29.1m, MID 31.8m, FWD 27.5m.
      Value by position (median xP per £m over the horizon, players expected to play 60+): GKP 3.92, DEF 4.20, MID 3.62, FWD 3.45. Best value right now: defenders.
      Defensive contribution points are 3.7 of the defenders' 23.8 projected in GW10.
   5. Formation 4-4-2: the XI is whichever 11 project most in GW10 within the formation rules.
   6. Clubs with more than one player: ARS x3, BOU x3, LEE x2. The optimiser has no club preference beyond the 3-player limit; the club ratings and fixtures behind these picks are under CLUBS.
-  7. Bench: 21.5m on 4 players projecting 15.0 in GW10. Bench points count at 10% in the optimiser (auto-sub cover), so cheap but playing bench players win.
+  7. Bench: 21.6m on 4 players projecting 15.0 in GW10. Bench points count at 10% in the optimiser (auto-sub cover), so cheap but playing bench players win.
   8. Captain: the starter with the highest GW10 projection; vice: next highest who is expected to play 60+ minutes.
 
 STARTING XI
@@ -51,7 +51,7 @@ STARTING XI
 BENCH (substitution order; slot 12 is always the reserve goalkeeper)
   Pos Player               Team    £m  GW10 opp        xP   xP6w  mins  breakdown
   GKP Trafford [12]        LEE    5.0  TOT (H)       4.01   22.7    90  app +2.00 cs +1.35 gc -0.32 sav +0.46 bon +0.55
-  DEF Hill [13]            BOU    5.5  IPS (A)       4.15   25.0    90  app +2.00 gls +0.19 ast +0.22 cs +1.01 gc -0.45 dc +1.03 bon +0.32 crd -0.16
+  DEF Hill [13]            BOU    5.6  IPS (A)       4.15   25.0    90  app +2.00 gls +0.19 ast +0.22 cs +1.01 gc -0.45 dc +1.03 bon +0.32 crd -0.16
   MID Rudoni [14]          COV    4.9  EVE (A)       3.83   24.4    80  app +1.95 gls +0.86 ast +0.37 cs +0.24 dc +0.26 bon +0.27 crd -0.13
   FWD Calvert-Lewin [15]   LEE    6.1  TOT (H)       3.03   24.0    65  app +1.50 gls +1.15 ast +0.06 bon +0.47 crd -0.14
   Order rule: likeliest to play first, then expected points (rules file C2).
@@ -134,7 +134,7 @@ WHY EACH PLAYER
     Points come from: clean-sheet chance +1.20, goal threat +0.85 (0.14 xG per 90), bonus +0.62 (0.69 bonus per 90).
     Fixtures: GW10 BRE (H) 4.7; GW11 HUL (A) 4.8; GW12 NEW (H) 5.0; GW13 BOU (A) 3.8; GW14 NFO (A) 4.1; GW15 EVE (H) 4.9.
     Fixtures vs form: 27.3 of his 27.4 would come against average opponents; his fixtures are easier than average, worth +0.1.
-    Value: #6 of 83 defenders for xP per £m over the horizon.
+    Value: #5 of 83 defenders for xP per £m over the horizon.
     Versus alternatives: beats the best similar-priced option, Vuskovic (BHA, 0.2m less), by 1.1 weighted xP over the horizon.
 
   Silva (BOU, DEF, 5.1m) - starter
@@ -143,17 +143,17 @@ WHY EACH PLAYER
     Points come from: defensive contributions +1.04 (hits the threshold in 52% of full games), clean-sheet chance +1.01, goal threat +0.69 (0.10 xG per 90).
     Fixtures: GW10 IPS (A) 4.5; GW11 NFO (H) 4.6; GW12 FUL (A) 4.2; GW13 BHA (H) 4.3; GW14 HUL (H) 5.3; GW15 ARS (A) 3.7.
     Fixtures vs form: 27.0 of his 26.6 would come against average opponents; his fixtures are harder than average, worth -0.3.
-    Value: #3 of 83 defenders for xP per £m over the horizon.
+    Value: #2 of 83 defenders for xP per £m over the horizon.
     Versus alternatives: beats the best similar-priced option, Vuskovic (BHA, 0.1m more), by 0.5 weighted xP over the horizon.
 
-  Hill (BOU, DEF, 5.5m) - bench 13
+  Hill (BOU, DEF, 5.6m) - bench 13
     Projection: 4.15 xP in GW10, 25.0 over 6 weeks.
     Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
     Points come from: defensive contributions +1.03 (hits the threshold in 51% of full games), clean-sheet chance +1.01, bonus +0.32 (0.32 bonus per 90).
     Fixtures: GW10 IPS (A) 4.2; GW11 NFO (H) 4.3; GW12 FUL (A) 4.0; GW13 BHA (H) 4.1; GW14 HUL (H) 5.0; GW15 ARS (A) 3.6.
     Fixtures vs form: 25.3 of his 25.0 would come against average opponents; his fixtures are harder than average, worth -0.2.
-    Value: #19 of 83 defenders for xP per £m over the horizon.
-    Versus alternatives: Vuskovic (BHA, 0.3m less) projects 0.6 more on his own, but the money is worth more elsewhere in the squad.
+    Value: #24 of 83 defenders for xP per £m over the horizon.
+    Versus alternatives: Vuskovic (BHA, 0.4m less) projects 0.6 more on his own, but the money is worth more elsewhere in the squad.
 
   Mbeumo (MUN, MID, 7.9m) - starter
     Projection: 5.15 xP in GW10, 29.6 over 6 weeks.
@@ -230,7 +230,7 @@ WHY EACH PLAYER
 
 BEST PLAYERS LEFT OUT (by weighted xP over GW10-15)
   GKP: Verbruggen BHA 4.6m 21.1; Suzuki AVL 5.0m 20.4; Tzolakis HUL 4.7m 20.4
-  DEF: Vuskovic BHA 5.2m 25.8; Konsa ARS 4.8m 25.3; Virgil LIV 6.4m 25.0
+  DEF: Vuskovic BHA 5.2m 25.8; Virgil LIV 6.4m 25.0; Muharemović LEE 5.1m 24.8
   MID: Palmer CHE 9.8m 25.6; Rice ARS 7.4m 25.4; B.Fernandes MUN 11.7m 24.8
   FWD: Isak LIV 9.2m 24.9; N.Jackson AVL 7.0m 24.2; Thiago BRE 7.8m 24.2
   These lost on price per point, the 3-per-club limit, or fit with the rest of the squad.
