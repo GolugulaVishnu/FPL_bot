@@ -1,5 +1,7 @@
 # FPL bot
 
+**Start here:** `docs/PROJECT_CONTEXT.md` is the master handover: what exists, decisions made, model behaviour, owner's rules, site findings, caveats and next steps. Read it first in any new session and keep it updated when something significant changes.
+
 ## Rules knowledge base
 
 `docs/fpl-rules-context.md` is the authoritative FPL rules reference for this project (2026/27 season, v2.6, verified 2026-10-29 at GW9). Read the relevant part before writing or changing any logic that touches squads, transfers, prices, chips, deadlines, scoring, leagues or cups.
