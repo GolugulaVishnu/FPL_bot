@@ -557,6 +557,41 @@ def _save_login_layout(b, args, secrets: list[str]) -> None:
             print(f"Layout saved locally but not pushed: {e}")
 
 
+def cmd_results(args) -> int:
+    """Points, gameweek rank and percentile for each gameweek the team has played."""
+    client = FplPublicClient(paths.cache_dir())
+    cfg = config_mod.load()
+    entry = int(cfg.extra.get("entry") or TEAM_ENTRY)
+    try:
+        boot = client.bootstrap(max_age=1800)
+        hist = client.get(f"entry/{entry}/history/", max_age=600)
+    except (FplBlocked, FplError) as e:
+        print(f"Could not read FPL data: {e}")
+        return 1
+    total = boot.get("total_players") or 0
+    events = {e["id"]: e for e in boot["events"]}
+    rows = sorted(hist.get("current", []), key=lambda r: r["event"])
+    if not rows:
+        print("The team has not played a gameweek yet.")
+        return 0
+    chips = {c["event"]: c["name"] for c in hist.get("chips", [])}
+    print(f"Team {entry}. Players in the game: {total:,}.")
+    print(f"{'GW':>3} {'Pts':>4} {'Hits':>4} {'Avg':>4} {'High':>5} {'GW rank':>11} {'Top %':>7}  Chip")
+    for r in rows:
+        ev = events.get(r["event"], {})
+        rank = r.get("rank")
+        top = f"{100 * rank / total:6.1f}%" if rank and total else "     -"
+        print(f"{r['event']:>3} {r['points']:>4} {-r.get('event_transfers_cost', 0):>4} "
+              f"{ev.get('average_entry_score', 0) or 0:>4} {ev.get('highest_score', 0) or 0:>5} "
+              f"{(rank or 0):>11,} {top}  {chips.get(r['event'], '')}")
+    pts = sum(r["points"] - r.get("event_transfers_cost", 0) for r in rows)
+    avg = sum((events.get(r["event"], {}).get("average_entry_score") or 0) for r in rows)
+    print(f"\nTotal over {len(rows)} gameweek(s): {pts} pts vs the average manager's {avg} "
+          f"({pts - avg:+d}). 'Top %' is the gameweek rank as a share of all players (lower is better).")
+    print("Overall rank is not shown: the team started at GW9, so it carries zeros for GW1-8.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="fplbot")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -575,6 +610,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("pause", help="pause the bot on this machine").set_defaults(func=cmd_pause)
     sub.add_parser("resume", help="resume the bot on this machine").set_defaults(func=cmd_resume)
     sub.add_parser("status", help="show setup state and recent runs").set_defaults(func=cmd_status)
+    sub.add_parser("results", help="points, gameweek rank and percentile so far").set_defaults(func=cmd_results)
 
     sc = sub.add_parser("schedule", help="register or remove the 15-minute run")
     sc.add_argument("action", choices=["install", "remove"])

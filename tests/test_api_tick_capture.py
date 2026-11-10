@@ -138,3 +138,18 @@ def test_blocked_by_fpl_alerts_and_makes_no_moves():
 def test_cli_module_runs():
     out = subprocess.run(["python3", "-m", "fplbot", "--help"], capture_output=True, text=True, cwd=paths.REPO_ROOT)
     assert out.returncode == 0 and "capture" in out.stdout
+
+
+def test_results_prints_percentile(capsys, monkeypatch):
+    from fplbot import cli
+    routes = {"bootstrap-static/": {"total_players": 1000, "events": [
+                  {"id": 9, "average_entry_score": 50, "highest_score": 120},
+                  {"id": 10, "average_entry_score": 40, "highest_score": 110}]},
+              "entry/11204042/history/": {"current": [
+                  {"event": 9, "points": 70, "event_transfers_cost": 0, "rank": 50},
+                  {"event": 10, "points": 45, "event_transfers_cost": 0, "rank": 300}],
+                  "chips": [{"name": "bboost", "event": 9}]}}
+    monkeypatch.setattr(cli, "FplPublicClient", lambda cache: client_with(routes))
+    assert cli.main(["results"]) == 0
+    out = capsys.readouterr().out
+    assert "5.0%" in out and "30.0%" in out and "bboost" in out and "115 pts" in out and "(+25)" in out
