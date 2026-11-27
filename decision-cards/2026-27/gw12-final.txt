@@ -1,9 +1,9 @@
 FPL BOT DECISION CARD | 2026-27 GW12 | FINAL
 ==============================================================================
-Generated:  2026-11-27 17:37 UTC  (model b1e3342)
+Generated:  2026-11-27 18:21 UTC  (model c77b3da)
 Deadline:   Fri 27 Nov 2026 18:30 UTC  (from the FPL API)
 Mode:       Transfers from the current squad (after GW11): 3 free transfer(s), bank 1.1m. Hits cost 4 pts each; a free transfer is only used if it gains at least 10 points over the horizon or replaces a long-term absentee; otherwise it is saved.
-Data:       FPL API, read 2026-11-27 17:37 UTC; 11 finished gameweeks loaded
+Data:       FPL API, read 2026-11-27 18:21 UTC; 11 finished gameweeks loaded
 
 SUMMARY
   Squad cost 99.2m of 100.3m, bank 1.1m
