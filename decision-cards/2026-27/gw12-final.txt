@@ -1,0 +1,253 @@
+FPL BOT DECISION CARD | 2026-27 GW12 | FINAL
+==============================================================================
+Generated:  2026-11-27 17:28 UTC  (model c0586e1)
+Deadline:   Fri 27 Nov 2026 18:30 UTC  (from the FPL API)
+Mode:       Transfers from the current squad (after GW11): 3 free transfer(s), bank 1.1m. Hits cost 4 pts each; a free transfer is only used if it gains at least 10 points over the horizon or replaces a long-term absentee; otherwise it is saved.
+Data:       FPL API, read 2026-11-27 17:28 UTC; 11 finished gameweeks loaded
+
+SUMMARY
+  Squad cost 99.2m of 100.3m, bank 1.1m
+  Captain De Cuyper (BHA), vice Gabriel (ARS)
+  Chip: none
+  Projected points GW12: 55.4 (incl. captain)
+  Planning horizon GW12-17, later weeks weighted less (x0.85 per week)
+
+TRANSFERS
+  Free transfers: 3. Transfers made: 0. Hits: 0 (0 pts). Bank after: 1.1m.
+  No transfer cleared the bar (an incoming player at least 10 points better over the horizon, or an owned player out for 3+ weeks; a hit needs 4 more), so the free transfer is saved for injuries, form dips and fixture swings.
+  Weakest squad players by weighted xP: Raya 14.4, Trafford 16.3, Rudoni 17.1.
+
+SECOND OPINION (owner's rules are guidance; the bot may override them and says so here)
+  Owner's rules: no transfer.
+  Plain expected value (a saved free transfer worth 2 pts): no transfer.
+  Both agree.
+
+HOW THE SQUAD WAS BUILT
+  1. Goal: the most expected points over GW12-17, nearer weeks counting more, within 100.3m, 2/5/5/3 and max 3 per club.
+  2. Highest projected players over the horizon: Haaland 33.0, Gabriel 30.1, Tavernier 28.8, De Cuyper 27.9, E.Le Fée 27.8.
+  3. Biggest spend: Haaland at 15.7m (33.0 xP over the horizon). That leaves 84.6m for the other 14, about 6.0m each.
+  4. Money by position: GKP 11.3m, DEF 29.7m, MID 32.0m, FWD 27.4m.
+     Value by position (median xP per £m over the horizon, players expected to play 60+): GKP 3.90, DEF 3.86, MID 3.50, FWD 3.34. Best value right now: goalkeepers.
+     Defensive contribution points are 3.9 of the defenders' 23.0 projected in GW12.
+  5. Formation 4-3-3: the XI is whichever 11 project most in GW12 within the formation rules.
+  6. Clubs with more than one player: ARS x3, BOU x3, LEE x2. The optimiser has no club preference beyond the 3-player limit; the club ratings and fixtures behind these picks are under CLUBS.
+  7. Bench: 23.0m on 4 players projecting 15.0 in GW12. Bench points count at 10% in the optimiser (auto-sub cover), so cheap but playing bench players win.
+  8. Captain: the starter with the highest GW12 projection; vice: next highest who is expected to play 60+ minutes.
+
+STARTING XI
+  Pos Player               Team    £m  GW12 opp        xP   xP6w  mins  breakdown
+  GKP Trafford             LEE    5.1  COV (H)       4.25   23.5    90  app +2.00 cs +1.53 gc -0.27 sav +0.35 bon +0.65
+  DEF Gabriel (V)          ARS    8.1  MCI (H)       4.90   30.1    90  app +2.00 gls +0.57 ast +0.11 cs +1.36 gc -0.32 dc +0.78 bon +0.54 crd -0.15
+  DEF De Cuyper (C)        BHA    5.6  NEW (H)       5.03   27.9    83  app +2.00 gls +0.92 ast +0.57 cs +1.36 gc -0.32 dc +0.14 bon +0.55 crd -0.19
+  DEF Hill                 BOU    5.7  FUL (A)       4.33   27.2    90  app +2.00 gls +0.22 ast +0.15 cs +0.99 gc -0.46 dc +1.12 bon +0.44 crd -0.14
+  DEF Van Hecke            TOT    5.2  SUN (A)       4.43   26.7    90  app +2.00 gls +0.62 ast +0.15 cs +1.18 gc -0.38 dc +0.70 bon +0.35 crd -0.19
+  MID Tavernier            BOU    6.8  FUL (A)       4.64   28.8    85  app +2.00 gls +1.23 ast +0.44 cs +0.27 dc +0.22 bon +0.74 crd -0.26
+  MID E.Le Fée             SUN    5.7  TOT (H)       4.59   27.8    87  app +2.00 gls +1.06 ast +0.46 cs +0.34 dc +0.33 bon +0.47 crd -0.07
+  MID Mbeumo               MUN    7.8  BRE (H)       4.45   25.5    83  app +1.81 gls +1.80 ast +0.37 cs +0.17 dc +0.06 bon +0.38 crd -0.15
+  FWD Haaland              MCI   15.7  ARS (A)       4.50   33.0    89  app +2.00 gls +1.42 ast +0.13 bon +1.00 crd -0.05
+  FWD Barry                EVE    5.7  LIV (H)       4.62   27.5    83  app +2.00 gls +1.93 ast +0.12 bon +0.62 crd -0.05
+  FWD Calvert-Lewin        LEE    6.0  COV (H)       4.69   26.5    88  app +2.00 gls +2.16 ast +0.13 bon +0.56 crd -0.17
+
+BENCH (substitution order; slot 12 is always the reserve goalkeeper)
+  Pos Player               Team    £m  GW12 opp        xP   xP6w  mins  breakdown
+  GKP Raya [12]            ARS    6.2  MCI (H)       2.71   21.3    65  app +1.50 cs +1.07 gc -0.19 sav +0.08 bon +0.29
+  DEF Silva [13]           BOU    5.1  FUL (A)       4.28   27.0    90  app +2.00 gls +0.48 ast +0.12 cs +0.99 gc -0.46 dc +1.17 bon +0.26 crd -0.28
+  MID Ødegaard [14]        ARS    6.7  MCI (H)       4.24   25.9    86  app +2.00 gls +0.73 ast +0.60 cs +0.36 dc +0.10 bon +0.53 crd -0.09
+  MID Rudoni [15]          COV    5.0  LEE (A)       3.75   24.8    83  app +1.97 gls +0.71 ast +0.39 cs +0.20 dc +0.23 bon +0.38 crd -0.11
+  Order rule: likeliest to play first, then expected points (rules file C2).
+
+CAPTAINCY
+  De Cuyper             5.03 xP, 83 expected mins  -> captain
+  Gabriel               4.90 xP, 90 expected mins  -> vice
+  Calvert-Lewin         4.69 xP, 88 expected mins  -> alternative
+  Tavernier             4.64 xP, 85 expected mins  -> alternative
+  Rule: captain = highest xP in the XI; vice = next highest starter expected to play 60+ minutes.
+
+CHIPS
+  Bench Boost: not available.
+  Triple Captain: De Cuyper projects 5.03 this week; best captain score in the rest of the chip window, owned or affordable players (best: Haaland GW15) is 6.03 -> hold (below the 8-point floor).
+  Wildcard / Free Hit: checks not built yet, so held this week.
+
+CLUBS IN THE SQUAD
+  Ratings come from expected goals for and against, recent matches weighted more (1.00 = league average).
+  ARS x3: attack 1.12 (creates 12% above average), defence 0.64 (concedes 36% less than average).
+    Opponents GW12-17: MCI (H), BRE (A), TOT (A), BOU (H), MUN (H), CRY (A). Their average attack 1.10, average defence 0.98.
+  BOU x3: attack 1.21 (creates 21% above average), defence 0.93 (concedes 7% less than average).
+    Opponents GW12-17: FUL (A), BHA (H), HUL (H), ARS (A), COV (H), TOT (A). Their average attack 0.95, average defence 0.90.
+  LEE x2: attack 1.02 (creates 2% above average), defence 0.89 (concedes 11% less than average).
+    Opponents GW12-17: COV (H), MCI (A), IPS (H), LIV (A), FUL (H), AVL (A). Their average attack 1.02, average defence 1.00.
+  BHA x1: attack 1.19 (creates 19% above average), defence 0.90 (concedes 10% less than average).
+    Opponents GW12-17: NEW (H), BOU (A), NFO (A), EVE (H), IPS (H), FUL (A). Their average attack 0.99, average defence 1.03.
+  TOT x1: attack 0.88 (creates 12% below average), defence 0.83 (concedes 17% less than average).
+    Opponents GW12-17: SUN (A), FUL (H), ARS (H), HUL (A), LIV (A), BOU (H). Their average attack 1.02, average defence 0.90.
+  SUN x1: attack 0.91 (creates 9% below average), defence 0.98 (concedes 2% less than average).
+    Opponents GW12-17: TOT (H), LIV (A), NEW (A), NFO (H), CRY (H), EVE (A). Their average attack 1.00, average defence 0.99.
+  MUN x1: attack 1.15 (creates 15% above average), defence 1.13 (concedes 13% more than average).
+    Opponents GW12-17: BRE (H), NEW (A), COV (H), CRY (A), ARS (A), NFO (H). Their average attack 1.01, average defence 0.98.
+  COV x1: attack 0.82 (creates 18% below average), defence 1.04 (concedes 4% more than average).
+    Opponents GW12-17: LEE (A), IPS (H), MUN (A), AVL (H), BOU (A), CHE (H). Their average attack 1.05, average defence 1.05.
+  MCI x1: attack 1.27 (creates 27% above average), defence 0.85 (concedes 15% less than average).
+    Opponents GW12-17: ARS (A), LEE (H), BRE (A), CHE (H), HUL (H), NEW (A). Their average attack 1.00, average defence 0.94.
+  EVE x1: attack 0.89 (creates 11% below average), defence 1.01 (concedes 1% more than average).
+    Opponents GW12-17: LIV (H), AVL (A), FUL (H), BHA (A), NFO (A), SUN (H). Their average attack 1.04, average defence 0.95.
+
+WHY EACH PLAYER
+  Trafford (LEE, GKP, 5.1m) - starter
+    Projection: 4.25 xP in GW12, 23.5 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.53, bonus +0.65 (0.65 bonus per 90), saves +0.35 (3.1 saves per 90).
+    Fixtures: GW12 COV (H) 4.3; GW13 MCI (A) 3.6; GW14 IPS (H) 4.1; GW15 LIV (A) 3.6; GW16 FUL (H) 4.1; GW17 AVL (A) 3.8.
+    Fixtures vs form: 23.4 of his 23.5 would come against average opponents; his fixtures are easier than average, worth +0.1.
+    Value: #2 of 20 goalkeepers for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Tzolakis (HUL, 0.4m less), by 0.7 weighted xP over the horizon.
+
+  Raya (ARS, GKP, 6.2m) - bench 12
+    Projection: 2.71 xP in GW12, 21.3 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 86 mins when he plays).
+    Points come from: clean-sheet chance +1.07, bonus +0.29 (0.40 bonus per 90).
+    Fixtures: GW12 MCI (H) 2.7; GW13 BRE (A) 3.6; GW14 TOT (A) 3.9; GW15 BOU (H) 3.7; GW16 MUN (H) 3.8; GW17 CRY (A) 3.6.
+    Fixtures vs form: 22.0 of his 21.3 would come against average opponents; his fixtures are harder than average, worth -0.8.
+    Value: #16 of 20 goalkeepers for xP per £m over the horizon.
+    Versus alternatives: Tzolakis (HUL, 1.5m less) projects 1.2 more on his own, but the money is worth more elsewhere in the squad.
+    Watch: doubtful (75%).
+
+  Gabriel (ARS, DEF, 8.1m) - vice-captain
+    Projection: 4.90 xP in GW12, 30.1 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.36, defensive contributions +0.78 (hits the threshold in 39% of full games), goal threat +0.57 (0.10 xG per 90).
+    Fixtures: GW12 MCI (H) 4.9; GW13 BRE (A) 4.8; GW14 TOT (A) 5.1; GW15 BOU (H) 5.1; GW16 MUN (H) 5.3; GW17 CRY (A) 5.0.
+    Fixtures vs form: 31.3 of his 30.1 would come against average opponents; his fixtures are harder than average, worth -1.1.
+    Value: #46 of 88 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Muharemović (LEE, 2.9m less), by 2.9 weighted xP over the horizon.
+
+  De Cuyper (BHA, DEF, 5.6m) - captain
+    Projection: 5.03 xP in GW12, 27.9 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 83 mins when he plays).
+    Points come from: clean-sheet chance +1.36, goal threat +0.92 (0.14 xG per 90), chance creation +0.57 (0.18 xA per 90).
+    Fixtures: GW12 NEW (H) 5.0; GW13 BOU (A) 3.8; GW14 NFO (A) 4.1; GW15 EVE (H) 5.2; GW16 IPS (H) 5.5; GW17 FUL (A) 4.3.
+    Fixtures vs form: 27.5 of his 27.9 would come against average opponents; his fixtures are easier than average, worth +0.4.
+    Value: #5 of 88 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Muharemović (LEE, 0.4m less), by 1.3 weighted xP over the horizon.
+
+  Hill (BOU, DEF, 5.7m) - starter
+    Projection: 4.33 xP in GW12, 27.2 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: defensive contributions +1.12 (hits the threshold in 56% of full games), clean-sheet chance +0.99, bonus +0.44 (0.44 bonus per 90).
+    Fixtures: GW12 FUL (A) 4.3; GW13 BHA (H) 4.3; GW14 HUL (H) 5.2; GW15 ARS (A) 3.8; GW16 COV (H) 5.1; GW17 TOT (A) 4.4.
+    Fixtures vs form: 26.7 of his 27.2 would come against average opponents; his fixtures are easier than average, worth +0.5.
+    Value: #10 of 88 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Muharemović (LEE, 0.5m less), by 0.8 weighted xP over the horizon.
+
+  Silva (BOU, DEF, 5.1m) - bench 13
+    Projection: 4.28 xP in GW12, 27.0 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: defensive contributions +1.17 (hits the threshold in 59% of full games), clean-sheet chance +0.99, goal threat +0.48 (0.09 xG per 90).
+    Fixtures: GW12 FUL (A) 4.3; GW13 BHA (H) 4.3; GW14 HUL (H) 5.2; GW15 ARS (A) 3.7; GW16 COV (H) 5.1; GW17 TOT (A) 4.3.
+    Fixtures vs form: 26.7 of his 27.0 would come against average opponents; his fixtures are easier than average, worth +0.3.
+    Value: #2 of 88 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Muharemović (LEE, 0.1m more), by 0.7 weighted xP over the horizon.
+
+  Van Hecke (TOT, DEF, 5.2m) - starter
+    Projection: 4.43 xP in GW12, 26.7 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 90 mins when he plays).
+    Points come from: clean-sheet chance +1.18, defensive contributions +0.70 (hits the threshold in 35% of full games), goal threat +0.62 (0.12 xG per 90).
+    Fixtures: GW12 SUN (A) 4.4; GW13 FUL (H) 4.9; GW14 ARS (H) 4.3; GW15 HUL (A) 4.8; GW16 LIV (A) 3.8; GW17 BOU (H) 4.4.
+    Fixtures vs form: 27.4 of his 26.7 would come against average opponents; his fixtures are harder than average, worth -0.7.
+    Value: #3 of 88 defenders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Muharemović (LEE, same price), by 0.7 weighted xP over the horizon.
+
+  Tavernier (BOU, MID, 6.8m) - starter
+    Projection: 4.64 xP in GW12, 28.8 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 85 mins when he plays).
+    Points come from: goal threat +1.23 (0.30 xG per 90), bonus +0.74 (0.78 bonus per 90), chance creation +0.44 (0.18 xA per 90).
+    Fixtures: GW12 FUL (A) 4.6; GW13 BHA (H) 4.9; GW14 HUL (H) 5.4; GW15 ARS (A) 4.0; GW16 COV (H) 5.4; GW17 TOT (A) 4.5.
+    Fixtures vs form: 29.7 of his 28.8 would come against average opponents; his fixtures are harder than average, worth -1.0.
+    Value: #6 of 100 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Groß (BHA, 0.5m less), by 1.1 weighted xP over the horizon.
+
+  E.Le Fée (SUN, MID, 5.7m) - starter
+    Projection: 4.59 xP in GW12, 27.8 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 87 mins when he plays).
+    Points come from: goal threat +1.06 (0.24 xG per 90), bonus +0.47 (0.49 bonus per 90), chance creation +0.46 (0.17 xA per 90).
+    Fixtures: GW12 TOT (H) 4.6; GW13 LIV (A) 4.2; GW14 NEW (A) 4.5; GW15 NFO (H) 4.7; GW16 CRY (H) 5.2; GW17 EVE (A) 4.5.
+    Fixtures vs form: 27.9 of his 27.8 would come against average opponents; his fixtures are harder than average, worth -0.1.
+    Value: #2 of 100 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Gomez (BHA, 0.6m less), by 2.3 weighted xP over the horizon.
+
+  Ødegaard (ARS, MID, 6.7m) - bench 14
+    Projection: 4.24 xP in GW12, 25.9 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 86 mins when he plays).
+    Points come from: goal threat +0.73 (0.16 xG per 90), chance creation +0.60 (0.22 xA per 90), bonus +0.53 (0.56 bonus per 90).
+    Fixtures: GW12 MCI (H) 4.2; GW13 BRE (A) 4.1; GW14 TOT (A) 4.0; GW15 BOU (H) 4.4; GW16 MUN (H) 4.7; GW17 CRY (A) 4.4.
+    Fixtures vs form: 26.3 of his 25.9 would come against average opponents; his fixtures are harder than average, worth -0.4.
+    Value: #20 of 100 midfielders for xP per £m over the horizon.
+    Versus alternatives: Groß (BHA, 0.4m less) projects 1.0 more on his own, but the money is worth more elsewhere in the squad.
+
+  Mbeumo (MUN, MID, 7.8m) - starter
+    Projection: 4.45 xP in GW12, 25.5 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 81% (about 76 mins when he plays).
+    Points come from: goal threat +1.80 (0.36 xG per 90), bonus +0.38 (0.41 bonus per 90), chance creation +0.37 (0.13 xA per 90).
+    Fixtures: GW12 BRE (H) 4.4; GW13 NEW (A) 4.2; GW14 COV (H) 4.7; GW15 CRY (A) 4.4; GW16 ARS (A) 3.4; GW17 NFO (H) 4.4.
+    Fixtures vs form: 25.7 of his 25.5 would come against average opponents; his fixtures are harder than average, worth -0.3.
+    Value: #41 of 100 midfielders for xP per £m over the horizon.
+    Versus alternatives: Groß (BHA, 1.5m less) projects 1.0 more on his own, but the money is worth more elsewhere in the squad.
+
+  Rudoni (COV, MID, 5.0m) - bench 15
+    Projection: 3.75 xP in GW12, 24.8 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 97% (about 82 mins when he plays).
+    Points come from: goal threat +0.71 (0.19 xG per 90), chance creation +0.39 (0.17 xA per 90), bonus +0.38 (0.42 bonus per 90).
+    Fixtures: GW12 LEE (A) 3.8; GW13 IPS (H) 4.7; GW14 MUN (A) 4.0; GW15 AVL (H) 4.3; GW16 BOU (A) 3.7; GW17 CHE (H) 4.3.
+    Fixtures vs form: 24.4 of his 24.8 would come against average opponents; his fixtures are easier than average, worth +0.4.
+    Value: #1 of 100 midfielders for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Gomez (BHA, 0.1m more), by 0.3 weighted xP over the horizon.
+
+  Haaland (MCI, FWD, 15.7m) - starter
+    Projection: 4.50 xP in GW12, 33.0 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 89 mins when he plays).
+    Points come from: goal threat +1.42 (0.62 xG per 90), bonus +1.00 (1.01 bonus per 90).
+    Fixtures: GW12 ARS (A) 4.5; GW13 LEE (H) 5.6; GW14 BRE (A) 5.3; GW15 CHE (H) 6.0; GW16 HUL (H) 6.0; GW17 NEW (A) 5.5.
+    Fixtures vs form: 33.9 of his 33.0 would come against average opponents; his fixtures are harder than average, worth -0.9.
+    Value: #18 of 18 forwards for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, Isak (LIV, 6.3m less), by 3.7 weighted xP over the horizon.
+
+  Barry (EVE, FWD, 5.7m) - starter
+    Projection: 4.62 xP in GW12, 27.5 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 83 mins when he plays).
+    Points come from: goal threat +1.93 (0.54 xG per 90), bonus +0.62 (0.67 bonus per 90).
+    Fixtures: GW12 LIV (H) 4.6; GW13 AVL (A) 4.6; GW14 FUL (H) 4.8; GW15 BHA (A) 4.3; GW16 NFO (A) 4.4; GW17 SUN (H) 4.9.
+    Fixtures vs form: 28.2 of his 27.5 would come against average opponents; his fixtures are harder than average, worth -0.7.
+    Value: #1 of 18 forwards for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, McBurnie (HUL, 0.2m less), by 3.2 weighted xP over the horizon.
+
+  Calvert-Lewin (LEE, FWD, 6.0m) - starter
+    Projection: 4.69 xP in GW12, 26.5 over 6 weeks.
+    Minutes: plays in 100% of recent team matches and lasts 60+ in 100% (about 88 mins when he plays).
+    Points come from: goal threat +2.16 (0.48 xG per 90), bonus +0.56 (0.58 bonus per 90).
+    Fixtures: GW12 COV (H) 4.7; GW13 MCI (A) 3.9; GW14 IPS (H) 5.2; GW15 LIV (A) 4.0; GW16 FUL (H) 4.5; GW17 AVL (A) 4.3.
+    Fixtures vs form: 26.4 of his 26.5 would come against average opponents; his fixtures are easier than average, worth +0.1.
+    Value: #2 of 18 forwards for xP per £m over the horizon.
+    Versus alternatives: beats the best similar-priced option, McBurnie (HUL, 0.5m less), by 2.6 weighted xP over the horizon.
+
+BEST PLAYERS LEFT OUT (by weighted xP over GW12-17)
+  GKP: Tzolakis HUL 4.7m 22.6; A.Becker LIV 5.5m 20.9; Roefs SUN 4.8m 20.8
+  DEF: Virgil LIV 6.4m 25.8; Muharemović LEE 5.2m 25.6; Vuskovic BHA 5.3m 25.3
+  MID: Groß BHA 6.3m 27.2; Wirtz LIV 7.5m 26.0; B.Fernandes MUN 11.6m 25.3
+  FWD: Isak LIV 9.4m 26.9; N.Jackson AVL 7.3m 26.3; Evanilson BOU 6.6m 25.6
+  These lost on price per point, the 3-per-club limit, or fit with the rest of the squad.
+
+ASSUMPTIONS AND CONFIDENCE
+  Raya: doubtful (75%)
+  Model: xG-based team strength, recent minutes, per-90 rates shrunk toward position averages.
+  Backtest 2025-26: beats recent form (captain 6.2 vs 4.1 pts/GW); FPL's own projection was
+  better on the 10 gameweeks where it could be compared (reports/backtest-2025-26.txt).
+  Not modelled yet, so check by eye before entering: teammate effects (a player's output with or
+  without a key teammate), midweek European and cup minutes (rotation risk), and price drops for
+  incoming players.
+  
+  HOW THIS GAMEWEEK GETS ENTERED
+    The bot cannot submit yet, so make these changes on the FPL site by hand:
+    1. No transfers this week (the free transfer is saved).
+    2. Pick Team: starting XI and bench order exactly as above; set captain (C) and vice (V).
+    3. Chip: none.
+    4. Save before Fri 27 Nov 18:30 UTC.
+
